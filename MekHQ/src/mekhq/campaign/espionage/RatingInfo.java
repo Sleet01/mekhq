@@ -37,10 +37,12 @@ package mekhq.campaign.espionage;
  * Base class for storing intelligence Information Levels
  */
 public class RatingInfo {
+    public final static int HIGHEST_LEVEL = 12;
+    public final static int LOWEST_LEVEL = -12;
+
     private int level = 0;
 
     public RatingInfo() {
-        this(0);
     }
 
     public RatingInfo(int level) {
@@ -52,6 +54,9 @@ public class RatingInfo {
     }
 
     public void setLevel(int level) {
+        if (level > HIGHEST_LEVEL || level < LOWEST_LEVEL) {
+            throw new IllegalArgumentException("Level must be between -12 and 12, inclusive");
+        }
         this.level = level;
     }
 }
