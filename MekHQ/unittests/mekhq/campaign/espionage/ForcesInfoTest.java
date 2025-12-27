@@ -4,12 +4,13 @@ import megamek.common.units.Entity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 
 import static mekhq.campaign.espionage.ForcesInfo.DEFAULT_ID;
+import static mekhq.campaign.espionage.RatingInfo.HIGHEST_LEVEL;
+import static mekhq.campaign.espionage.RatingInfo.LOWEST_LEVEL;
 import static org.junit.jupiter.api.Assertions.*;
 import static testUtilities.MHQTestUtilities.getEntityForUnitTesting;
 
@@ -28,7 +29,7 @@ class ForcesInfoTest {
         assertNotNull(forcesInfo.getKnownEntitiesList());
 
         assertEquals(0, forcesInfo.getKnownEntitiesList().size());
-        forcesInfo.addKnownEntity("Some Mek, I dunno, a BigBoy 2000?", -1);
+        forcesInfo.addKnownEntity("Some Mek, I dunno, a BigBoy 2000?", 1);
         assertEquals(1, forcesInfo.getKnownEntitiesList().size());
     }
 
@@ -124,5 +125,18 @@ class ForcesInfoTest {
             String randomName = forcesInfo.getRandomEntityName();
             assertTrue(names.contains(randomName));
         }
+    }
+
+    @Test
+    void setLevel() {
+        ForcesInfo forcesInfo = new ForcesInfo();
+        assertEquals(0, forcesInfo.getLevel());
+        for (int level: List.of(LOWEST_LEVEL, -6, -1, 0, 1, 6, HIGHEST_LEVEL)) {
+            forcesInfo.setLevel(level);
+            assertEquals(level, forcesInfo.getLevel());
+        }
+
+        assertThrows(IllegalArgumentException.class, () -> forcesInfo.setLevel(-1 + LOWEST_LEVEL));
+        assertThrows(IllegalArgumentException.class, () -> forcesInfo.setLevel(1 + HIGHEST_LEVEL));
     }
 }
