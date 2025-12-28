@@ -33,44 +33,17 @@
 
 package mekhq.campaign.espionage;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
+public class PersonnelIntel extends BasicIntel {
 
-public class PositionInfo extends RatingInfo {
-
-    private ArrayList<Integer> knownPositions;
-
-    public PositionInfo() {
-        this(0, new ArrayList<>());
+    public PersonnelIntel() {
+        this(0);
     }
 
-    public PositionInfo(int level) {
-        this(level, new ArrayList<>());
-    }
-
-    public PositionInfo(int level, ArrayList<Integer> knownPositions) {
+    public PersonnelIntel(int level) {
         super(level);
-        this.knownPositions = knownPositions;
     }
 
-    /**
-     * Creates copy of knownPositions
-     * @return ArrayList copy of all knownPositions
-     */
-    public ArrayList<Integer> getKnownPositions() {
-        return new ArrayList<>(knownPositions);
-    }
-
-    /**
-     * Returns true if position of ID'ed unit is known, _or_ if ID is default (false confidence)
-     * @param ID
-     * @return true if known / ID is default, otherwise false
-     */
-    public boolean getKnown(int ID) {
-        return knownPositions.contains(ID);
-    }
-
-    public void addKnown(int ID) {
-        knownPositions.add(ID);
+    public PersonnelIntel(PersonnelIntel other) {
+        super(other);
     }
 }

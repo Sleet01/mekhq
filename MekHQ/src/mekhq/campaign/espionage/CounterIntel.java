@@ -33,5 +33,17 @@
 
 package mekhq.campaign.espionage;
 
-public class PersonnelInfo extends RatingInfo {
+public class CounterIntel extends BasicIntel {
+
+    public CounterIntel() {
+        this(0);
+    }
+
+    public CounterIntel(int level) {
+        super(level);
+    }
+
+    public CounterIntel(CounterIntel other) {
+        super(other);
+    }
 }

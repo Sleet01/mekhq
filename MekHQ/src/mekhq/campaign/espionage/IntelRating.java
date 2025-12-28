@@ -33,6 +33,240 @@
 
 package mekhq.campaign.espionage;
 
-public class IntelRating {
+import megamek.common.annotations.Nullable;
+import megamek.logging.MMLogger;
+import mekhq.campaign.mission.Scenario;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class IntelRating {
+    private static final MMLogger LOGGER = MMLogger.create(IntelRating.class);
+
+    public final static String FORCES_NAME = "ForcesIntel";
+    public final static String POSITION_NAME = "PositionIntel";
+    public final static String LOGISTICS_NAME = "LogisticsIntel";
+    public final static String PERSONNEL_NAME = "PersonnelIntel";
+    public final static String COMMS_NAME = "CommsIntel";
+    public final static String FINANCIAL_NAME = "FinancialIntel";
+    public final static String LOCAL_NAME = "LocalIntel";
+    public final static String COUNTER_NAME = "CounterIntel";
+
+    public final static HashMap<String, List<String>> intelAdjacencyMap = new HashMap<>(Map.of(
+          COMMS_NAME, List.of(POSITION_NAME, COUNTER_NAME),
+          COUNTER_NAME, List.of(COMMS_NAME, PERSONNEL_NAME),
+          PERSONNEL_NAME, List.of(COUNTER_NAME, FORCES_NAME),
+          FORCES_NAME, List.of(PERSONNEL_NAME, FINANCIAL_NAME),
+          FINANCIAL_NAME, List.of(FORCES_NAME, LOGISTICS_NAME),
+          LOGISTICS_NAME, List.of(FINANCIAL_NAME, LOCAL_NAME),
+          LOCAL_NAME, List.of(LOGISTICS_NAME, POSITION_NAME),
+          POSITION_NAME, List.of(LOCAL_NAME, COMMS_NAME)
+    ));
+
+    public final static HashMap<String, String> intelOppositionMap = new HashMap<>(Map.of(
+          COMMS_NAME, FINANCIAL_NAME,
+          COUNTER_NAME, LOGISTICS_NAME,
+          PERSONNEL_NAME, LOCAL_NAME,
+          FORCES_NAME, POSITION_NAME,
+          FINANCIAL_NAME, COMMS_NAME,
+          LOGISTICS_NAME, COUNTER_NAME,
+          LOCAL_NAME, PERSONNEL_NAME,
+          POSITION_NAME,  FORCES_NAME
+    ));
+
+    // Fields that influence per-Scenario OpFor knowledge directly
+    private ForcesIntel forcesIntel;
+    private PositionIntel positionIntel;
+    private LogisticsIntel logisticsIntel;
+
+    // Fields that mainly influence Espionage events
+    private PersonnelIntel personnelIntel;
+    private CommsIntel commsIntel;
+    private FinancialIntel financialIntel;
+    private LocalIntel localIntel;
+    private CounterIntel counterIntel;
+
+    /**
+     * Basic constructor, sets all Intel levels to 0
+     */
+    public IntelRating() {
+        this(0, 0, 0, 0, 0, 0, 0, 0);
+    }
+
+    /**
+     * Constructor for static Intel Ratings used by bots
+     * @param levelForAllIntel
+     */
+    public IntelRating(int levelForAllIntel) {
+        this(
+              levelForAllIntel,
+              levelForAllIntel,
+              levelForAllIntel,
+              levelForAllIntel,
+              levelForAllIntel,
+              levelForAllIntel,
+              levelForAllIntel,
+              levelForAllIntel
+        );
+    }
+
+    /**
+     * Constructor used to set every level
+     * @param forcesLevel
+     * @param positionLevel
+     * @param logisticsLevel
+     * @param personnelLevel
+     * @param commsLevel
+     * @param financialLevel
+     * @param localLevel
+     * @param counterLevel
+     */
+    public IntelRating(int forcesLevel, int positionLevel, int logisticsLevel,
+          int personnelLevel, int commsLevel, int financialLevel, int localLevel, int counterLevel) {
+        forcesIntel = new ForcesIntel(forcesLevel);
+        positionIntel = new PositionIntel(positionLevel);
+        logisticsIntel = new LogisticsIntel(logisticsLevel);
+        personnelIntel = new PersonnelIntel(personnelLevel);
+        commsIntel = new CommsIntel(commsLevel);
+        financialIntel = new FinancialIntel(financialLevel);
+        localIntel = new LocalIntel(localLevel);
+        counterIntel = new CounterIntel(counterLevel);
+    }
+
+    // All Intel objects will be mutable for ease of reconstitution, and for visitor pattern use.
+    public ForcesIntel getForcesIntel() {
+        return forcesIntel;
+    }
+
+    public PositionIntel getPositionIntel() {
+        return positionIntel;
+    }
+
+    public LogisticsIntel getLogisticsIntel() {
+        return logisticsIntel;
+    }
+
+    public PersonnelIntel getPersonnelIntel() {
+        return personnelIntel;
+    }
+
+    public CommsIntel getCommsIntel() {
+        return commsIntel;
+    }
+
+    public FinancialIntel getFinancialIntel() {
+        return financialIntel;
+    }
+
+    public LocalIntel getLocalIntel() {
+        return localIntel;
+    }
+
+    public CounterIntel getCounterIntel() {
+        return counterIntel;
+    }
+
+    public void ageAllIntelByOne() {
+        ageAllIntel(1);
+    }
+
+    public void setAnIntelToLevel(String name, int level) {
+        getAnIntel(name).setLevel(level);
+    }
+
+    public void setAllIntelToLevel(int level) {
+        for (String key : intelAdjacencyMap.keySet()) {
+            try {
+                setAnIntelToLevel(key, level);
+            } catch (NullPointerException e) {
+                LOGGER.error(String.format("Could not set level on Intel type: '%s'", key));
+            }
+        }
+    }
+
+    public void ageAllIntel(int delta) {
+        for (String key : intelAdjacencyMap.keySet()) {
+            ageAnIntel(key, delta);
+        }
+    }
+
+    public @Nullable BasicIntel getAnIntel(String name) {
+        BasicIntel intel = switch (name) {
+            case FORCES_NAME -> getForcesIntel();
+            case POSITION_NAME -> getPositionIntel();
+            case LOGISTICS_NAME -> getLogisticsIntel();
+            case PERSONNEL_NAME -> getPersonnelIntel();
+            case COMMS_NAME -> getCommsIntel();
+            case FINANCIAL_NAME -> getFinancialIntel();
+            case LOCAL_NAME -> getLocalIntel();
+            case COUNTER_NAME -> getCounterIntel();
+            default -> null;
+        };
+
+        return intel;
+    }
+
+    /**
+     * Decrease magnitude of Intel type rating towards 0 by delta.
+     * If current level > 0 + delta, new level is (current - delta)
+     * If current level is < 0 - delta, new level is (current + delta)
+     * if -delta <= current level < delta, new level is 0.
+     * @param name      The Intel type name to adjust; see "*_NAME" constants
+     * @param delta     Amount to "age" the intel level by; assumes positive progression towards 0
+     */
+    public void ageAnIntel(String name, int delta) {
+        try {
+            BasicIntel intel = getAnIntel(name);
+            int level = intel.getLevel();
+            int newLevel = (level >= 0) ? Math.max(level - delta, 0) : Math.min(level + delta, 0);
+            intel.setLevel(newLevel);
+        } catch (NullPointerException e) {
+            LOGGER.error(String.format("Could age level on Intel type: '%s'", name));
+        }
+    }
+
+    public void improveAnIntel(String name, int delta) {
+        int adjacencyBonus = (int) Math.floor(delta/2.0);
+        try {
+            getAnIntel(name).increaseLevel(delta);
+            for (String adjacent : intelAdjacencyMap.get(name)) {
+                try {
+                    getAnIntel(adjacent).increaseLevel(adjacencyBonus);
+                } catch (NullPointerException e) {
+                    LOGGER.error(String.format("Could improve level on adjacent Intel type: '%s'", adjacent));
+                }
+            }
+        } catch (NullPointerException e) {
+            LOGGER.error(String.format("Could improve level on Intel type: '%s'", name));
+        }
+    }
+
+    public void lockAnIntel(String name) {
+        try {
+            getAnIntel(name).setLocked(true);
+        } catch (NullPointerException e) {
+            LOGGER.error(String.format("Could not lock level on Intel type: '%s'", name));
+        }
+    }
+
+    public void unlockAnIntel(String name) {
+        try {
+            getAnIntel(name).setLocked(false);
+        } catch (NullPointerException e) {
+            LOGGER.error(String.format("Could not unlock level on Intel type: '%s'", name));
+        }
+    }
+
+    public void lockAllIntel() {
+        for (String key : intelAdjacencyMap.keySet()) {
+            lockAnIntel(key);
+        }
+    }
+
+    public void unlockAllIntel() {
+        for (String key : intelAdjacencyMap.keySet()) {
+            unlockAnIntel(key);
+        }
+    }
 }

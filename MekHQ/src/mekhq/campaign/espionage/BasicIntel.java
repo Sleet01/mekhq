@@ -36,17 +36,27 @@ package mekhq.campaign.espionage;
 /**
  * Base class for storing intelligence Information Levels
  */
-public class RatingInfo {
+public class BasicIntel {
     public final static int HIGHEST_LEVEL = 12;
     public final static int LOWEST_LEVEL = -12;
 
     private int level = 0;
+    protected boolean locked = false;
 
-    public RatingInfo() {
+    public BasicIntel() {
     }
 
-    public RatingInfo(int level) {
+    public BasicIntel(int level) {
+        if (level > HIGHEST_LEVEL || level < LOWEST_LEVEL) {
+            throw new IllegalArgumentException("Level must be between -12 and 12, inclusive");
+        }
         this.level = level;
+    }
+
+    // Copy Constructor
+    public BasicIntel(BasicIntel other) {
+        this.level = other.level;
+        this.locked = other.locked;
     }
 
     public int getLevel() {
@@ -57,6 +67,48 @@ public class RatingInfo {
         if (level > HIGHEST_LEVEL || level < LOWEST_LEVEL) {
             throw new IllegalArgumentException("Level must be between -12 and 12, inclusive");
         }
-        this.level = level;
+        if (!locked) {
+            this.level = level;
+        }
+    }
+
+    public void decrementLevel() {
+        if (!locked) {
+            decreaseLevel(1);
+        }
+    }
+
+    public void decreaseLevel(int delta) {
+        if (!locked) {
+            try {
+                setLevel(level - delta);
+            } catch (IllegalArgumentException ignored) {
+                // maybe log?
+            }
+        }
+    }
+
+    public void incrementLevel() {
+        if (!locked) {
+            increaseLevel(1);
+        }
+    }
+
+    public void increaseLevel(int delta) {
+        if (!locked) {
+            try {
+                setLevel(level + delta);
+            } catch (IllegalArgumentException ignored) {
+                // maybe log?
+            }
+        }
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
+    public boolean isLocked() {
+        return locked;
     }
 }
