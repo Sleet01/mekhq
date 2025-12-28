@@ -40,23 +40,31 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class ForcesInfo extends RatingInfo {
+public class ForcesIntel extends BasicIntel {
 
     public final static int DEFAULT_ID = -1;
 
     private ArrayList<SimpleEntry<String, Integer>> knownEntities;
 
-    public ForcesInfo() {
+    public ForcesIntel() {
         this(0, new ArrayList<SimpleEntry<String, Integer>>());
     }
 
-    public ForcesInfo(int level) {
+    public ForcesIntel(int level) {
         this(level, new ArrayList<SimpleEntry<String, Integer>>());
     }
 
-    public ForcesInfo(int level, ArrayList<SimpleEntry<String, Integer>> knownEntities) {
+    public ForcesIntel(int level, ArrayList<SimpleEntry<String, Integer>> knownEntities) {
         super(level);
         this.knownEntities = knownEntities;
+    }
+
+    public ForcesIntel(ForcesIntel other) {
+        super(other);
+        this.knownEntities = new ArrayList<SimpleEntry<String, Integer>>();
+        for (SimpleEntry<String, Integer> entry : other.knownEntities) {
+            this.knownEntities.add(new SimpleEntry<>(entry.getKey(), entry.getValue()));
+        }
     }
 
     /**
@@ -71,7 +79,9 @@ public class ForcesInfo extends RatingInfo {
         if (knownEntities == null) {
             throw new IllegalArgumentException("knownEntities cannot be null");
         }
-        this.knownEntities = knownEntities;
+        if (!locked) {
+            this.knownEntities = knownEntities;
+        }
     }
 
     /**
@@ -79,7 +89,9 @@ public class ForcesInfo extends RatingInfo {
      * @param fullName
      */
     public void addEntityByName(String fullName) {
-        addKnownEntityEntry(new SimpleEntry<>(fullName, DEFAULT_ID));
+        if (!locked) {
+            addKnownEntityEntry(new SimpleEntry<>(fullName, DEFAULT_ID));
+        }
     }
 
     /**
@@ -91,7 +103,9 @@ public class ForcesInfo extends RatingInfo {
         if (fullName == null || fullName.isEmpty() || id < 0) {
             throw new IllegalArgumentException("fullName cannot be null or empty, ID must be positive");
         }
-        addKnownEntityEntry(new SimpleEntry<>(fullName, id));
+        if (!locked) {
+            addKnownEntityEntry(new SimpleEntry<>(fullName, id));
+        }
     }
 
     /**
@@ -99,7 +113,9 @@ public class ForcesInfo extends RatingInfo {
      * @param entityEntry containing the description of an entity and an ID number
      */
     public void addKnownEntityEntry(SimpleEntry<String, Integer> entityEntry) {
-        this.knownEntities.add(entityEntry);
+        if (!locked) {
+            this.knownEntities.add(entityEntry);
+        }
     }
 
     /**

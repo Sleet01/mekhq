@@ -33,5 +33,50 @@
 
 package mekhq.campaign.espionage;
 
-public class FinancialInfo extends RatingInfo {
+import java.util.ArrayList;
+
+public class PositionIntel extends BasicIntel {
+
+    private ArrayList<Integer> knownPositions;
+
+    public PositionIntel() {
+        this(0, new ArrayList<>());
+    }
+
+    public PositionIntel(int level) {
+        this(level, new ArrayList<>());
+    }
+
+    public PositionIntel(int level, ArrayList<Integer> knownPositions) {
+        super(level);
+        this.knownPositions = knownPositions;
+    }
+
+    public PositionIntel(PositionIntel other) {
+        super(other);
+        this.knownPositions = new ArrayList<Integer>(other.knownPositions);
+    }
+
+    /**
+     * Creates copy of knownPositions
+     * @return ArrayList copy of all knownPositions
+     */
+    public ArrayList<Integer> getKnownPositions() {
+        return new ArrayList<>(knownPositions);
+    }
+
+    /**
+     * Returns true if position of ID'ed unit is known, _or_ if ID is default (false confidence)
+     * @param ID
+     * @return true if known / ID is default, otherwise false
+     */
+    public boolean getKnown(int ID) {
+        return knownPositions.contains(ID);
+    }
+
+    public void addKnown(int ID) {
+        if (!locked) {
+            knownPositions.add(ID);
+        }
+    }
 }

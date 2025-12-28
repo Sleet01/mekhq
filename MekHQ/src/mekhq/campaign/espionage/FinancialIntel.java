@@ -33,5 +33,17 @@
 
 package mekhq.campaign.espionage;
 
-public class LocalInfo extends RatingInfo {
+public class FinancialIntel extends BasicIntel {
+
+    public FinancialIntel() {
+        this(0);
+    }
+
+    public FinancialIntel(int level) {
+        super(level);
+    }
+
+    public FinancialIntel(FinancialIntel other) {
+        super(other);
+    }
 }
