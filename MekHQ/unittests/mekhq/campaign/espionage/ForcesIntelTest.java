@@ -8,13 +8,13 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 
-import static mekhq.campaign.espionage.ForcesInfo.DEFAULT_ID;
-import static mekhq.campaign.espionage.RatingInfo.HIGHEST_LEVEL;
-import static mekhq.campaign.espionage.RatingInfo.LOWEST_LEVEL;
+import static mekhq.campaign.espionage.ForcesIntel.DEFAULT_ID;
+import static mekhq.campaign.espionage.BasicIntel.HIGHEST_LEVEL;
+import static mekhq.campaign.espionage.BasicIntel.LOWEST_LEVEL;
 import static org.junit.jupiter.api.Assertions.*;
 import static testUtilities.MHQTestUtilities.getEntityForUnitTesting;
 
-class ForcesInfoTest {
+class ForcesIntelTest {
 
     @BeforeEach
     void setUp() {
@@ -22,21 +22,21 @@ class ForcesInfoTest {
 
     @Test
     void getKnownEntitiesList() {
-        ForcesInfo forcesInfo = new ForcesInfo();
-        assertNotNull(forcesInfo.getKnownEntitiesList());
+        ForcesIntel forcesIntel = new ForcesIntel();
+        assertNotNull(forcesIntel.getKnownEntitiesList());
 
-        assertThrows(IllegalArgumentException.class, () -> forcesInfo.setKnownEntitiesList(null));
-        assertNotNull(forcesInfo.getKnownEntitiesList());
+        assertThrows(IllegalArgumentException.class, () -> forcesIntel.setKnownEntitiesList(null));
+        assertNotNull(forcesIntel.getKnownEntitiesList());
 
-        assertEquals(0, forcesInfo.getKnownEntitiesList().size());
-        forcesInfo.addKnownEntity("Some Mek, I dunno, a BigBoy 2000?", 1);
-        assertEquals(1, forcesInfo.getKnownEntitiesList().size());
+        assertEquals(0, forcesIntel.getKnownEntitiesList().size());
+        forcesIntel.addKnownEntity("Some Mek, I dunno, a BigBoy 2000?", 1);
+        assertEquals(1, forcesIntel.getKnownEntitiesList().size());
     }
 
     @Test
     void setKnownEntitiesList() {
-        ForcesInfo forcesInfo = new ForcesInfo();
-        forcesInfo.setKnownEntitiesList(
+        ForcesIntel forcesIntel = new ForcesIntel();
+        forcesIntel.setKnownEntitiesList(
               new ArrayList(
                     List.of(
                           new SimpleEntry<>("Mek A", 1),
@@ -47,7 +47,7 @@ class ForcesInfoTest {
               )
         );
 
-        ArrayList knownEntitiesList = forcesInfo.getKnownEntitiesList();
+        ArrayList knownEntitiesList = forcesIntel.getKnownEntitiesList();
 
         assertEquals(4, knownEntitiesList.size());
         assertEquals(new SimpleEntry<>("Mek A", 1), knownEntitiesList.get(0));
@@ -59,11 +59,11 @@ class ForcesInfoTest {
     @Test
     void addEntityByName() {
         // Make sure we store both entries but mark them as "default ID", that is, unconfirmed.
-        ForcesInfo forcesInfo = new ForcesInfo();
-        forcesInfo.addEntityByName("MAD-3R");
-        forcesInfo.addEntityByName("CPLT-C1");
+        ForcesIntel forcesIntel = new ForcesIntel();
+        forcesIntel.addEntityByName("MAD-3R");
+        forcesIntel.addEntityByName("CPLT-C1");
 
-        ArrayList knownEntitiesList = forcesInfo.getKnownEntitiesList();
+        ArrayList knownEntitiesList = forcesIntel.getKnownEntitiesList();
         assertEquals(2, knownEntitiesList.size());
         assertEquals(new SimpleEntry<>("MAD-3R", DEFAULT_ID), knownEntitiesList.get(0));
         assertEquals(new SimpleEntry<>("CPLT-C1", DEFAULT_ID), knownEntitiesList.get(1));
@@ -71,26 +71,26 @@ class ForcesInfoTest {
 
     @Test
     void addKnownEntity() {
-        ForcesInfo forcesInfo = new ForcesInfo();
+        ForcesIntel forcesIntel = new ForcesIntel();
         String fileName = "Rifleman RFL-9T";
         Entity entity = getEntityForUnitTesting(fileName, false);
         assertNotNull(entity);
 
-        forcesInfo.addKnownEntity(entity.getFullChassis(), 1);
-        ArrayList<SimpleEntry<String, Integer>> knownEntitiesList = forcesInfo.getKnownEntitiesList();
+        forcesIntel.addKnownEntity(entity.getFullChassis(), 1);
+        ArrayList<SimpleEntry<String, Integer>> knownEntitiesList = forcesIntel.getKnownEntitiesList();
         SimpleEntry<String, Integer> entry = knownEntitiesList.get(0);
         assertEquals(entry.getKey(), entity.getFullChassis());
 
         // Test illegal name
-        assertThrows(IllegalArgumentException.class, () -> forcesInfo.addKnownEntity(null, 1));
-        assertThrows(IllegalArgumentException.class, () -> forcesInfo.addKnownEntity("", 1));
-        assertThrows(IllegalArgumentException.class, () -> forcesInfo.addKnownEntity("Some Big Mek", DEFAULT_ID));
+        assertThrows(IllegalArgumentException.class, () -> forcesIntel.addKnownEntity(null, 1));
+        assertThrows(IllegalArgumentException.class, () -> forcesIntel.addKnownEntity("", 1));
+        assertThrows(IllegalArgumentException.class, () -> forcesIntel.addKnownEntity("Some Big Mek", DEFAULT_ID));
     }
 
     @Test
     void getFullNameFromID() {
-        ForcesInfo forcesInfo = new ForcesInfo();
-        forcesInfo.setKnownEntitiesList(
+        ForcesIntel forcesIntel = new ForcesIntel();
+        forcesIntel.setKnownEntitiesList(
               new ArrayList(
                     List.of(
                           new SimpleEntry<>("Mek A", 1),
@@ -101,16 +101,16 @@ class ForcesInfoTest {
               )
         );
 
-        assertEquals("Mek A", forcesInfo.getFullNameFromID(1));
-        assertEquals("Mek B", forcesInfo.getFullNameFromID(2));
-        assertEquals("Mek C", forcesInfo.getFullNameFromID(3));
-        assertNull(forcesInfo.getFullNameFromID(4));
+        assertEquals("Mek A", forcesIntel.getFullNameFromID(1));
+        assertEquals("Mek B", forcesIntel.getFullNameFromID(2));
+        assertEquals("Mek C", forcesIntel.getFullNameFromID(3));
+        assertNull(forcesIntel.getFullNameFromID(4));
     }
 
     @Test
     void getRandomEntityName() {
-        ForcesInfo forcesInfo = new ForcesInfo();
-        forcesInfo.setKnownEntitiesList(
+        ForcesIntel forcesIntel = new ForcesIntel();
+        forcesIntel.setKnownEntitiesList(
               new ArrayList(
                     List.of(
                           new SimpleEntry<>("Mek A", 1),
@@ -122,21 +122,21 @@ class ForcesInfoTest {
         );
         ArrayList<String> names = new ArrayList<String>(List.of("Mek A", "Mek B", "Mek C", "Suspected Heavy Vehicle"));
         for (int i = 0; i < 4; i++) {
-            String randomName = forcesInfo.getRandomEntityName();
+            String randomName = forcesIntel.getRandomEntityName();
             assertTrue(names.contains(randomName));
         }
     }
 
     @Test
     void setLevel() {
-        ForcesInfo forcesInfo = new ForcesInfo();
-        assertEquals(0, forcesInfo.getLevel());
+        ForcesIntel forcesIntel = new ForcesIntel();
+        assertEquals(0, forcesIntel.getLevel());
         for (int level: List.of(LOWEST_LEVEL, -6, -1, 0, 1, 6, HIGHEST_LEVEL)) {
-            forcesInfo.setLevel(level);
-            assertEquals(level, forcesInfo.getLevel());
+            forcesIntel.setLevel(level);
+            assertEquals(level, forcesIntel.getLevel());
         }
 
-        assertThrows(IllegalArgumentException.class, () -> forcesInfo.setLevel(-1 + LOWEST_LEVEL));
-        assertThrows(IllegalArgumentException.class, () -> forcesInfo.setLevel(1 + HIGHEST_LEVEL));
+        assertThrows(IllegalArgumentException.class, () -> forcesIntel.setLevel(-1 + LOWEST_LEVEL));
+        assertThrows(IllegalArgumentException.class, () -> forcesIntel.setLevel(1 + HIGHEST_LEVEL));
     }
 }

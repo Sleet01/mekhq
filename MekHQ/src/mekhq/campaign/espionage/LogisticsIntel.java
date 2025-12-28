@@ -33,5 +33,17 @@
 
 package mekhq.campaign.espionage;
 
-public class LogisticsInfo extends RatingInfo {
+public class LogisticsIntel extends BasicIntel {
+
+    public LogisticsIntel() {
+        this(0);
+    }
+
+    public LogisticsIntel(int level) {
+        super(level);
+    }
+
+    public LogisticsIntel(LogisticsIntel other) {
+        super(other);
+    }
 }

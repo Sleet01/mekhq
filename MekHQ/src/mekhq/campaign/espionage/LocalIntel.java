@@ -33,5 +33,17 @@
 
 package mekhq.campaign.espionage;
 
-public class CommsInfo extends RatingInfo {
+public class LocalIntel extends BasicIntel {
+
+    public LocalIntel() {
+        this(0);
+    }
+
+    public LocalIntel(int level) {
+        super(level);
+    }
+
+    public LocalIntel(LocalIntel other) {
+        super(other);
+    }
 }
