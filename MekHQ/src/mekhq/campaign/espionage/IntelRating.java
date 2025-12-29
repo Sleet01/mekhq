@@ -35,11 +35,14 @@ package mekhq.campaign.espionage;
 
 import megamek.common.annotations.Nullable;
 import megamek.logging.MMLogger;
-import mekhq.campaign.mission.Scenario;
+import mekhq.campaign.Campaign;
+import mekhq.campaign.personnel.Person;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class IntelRating {
     private static final MMLogger LOGGER = MMLogger.create(IntelRating.class);
@@ -87,6 +90,9 @@ public class IntelRating {
     private LocalIntel localIntel;
     private CounterIntel counterIntel;
 
+    private ArrayList<UUID> assignedPersonIDs;
+    private transient ArrayList<Person> assignedPersons;
+
     /**
      * Basic constructor, sets all Intel levels to 0
      */
@@ -132,6 +138,10 @@ public class IntelRating {
         financialIntel = new FinancialIntel(financialLevel);
         localIntel = new LocalIntel(localLevel);
         counterIntel = new CounterIntel(counterLevel);
+
+        // These will need to be populated by specialized constructors or setters.
+        assignedPersonIDs = new ArrayList<UUID>();
+        assignedPersons = new ArrayList<>();
     }
 
     // All Intel objects will be mutable for ease of reconstitution, and for visitor pattern use.
@@ -268,5 +278,73 @@ public class IntelRating {
         for (String key : intelAdjacencyMap.keySet()) {
             unlockAnIntel(key);
         }
+    }
+
+    public void setAssignedPersonIDs(ArrayList<UUID> personIDs) {
+        this.assignedPersonIDs = personIDs;
+    }
+
+    public void addPersonID(UUID personID) {
+        this.assignedPersonIDs.add(personID);
+    }
+
+    public void addPerson(Person prospect) {
+        if (prospect != null && !this.assignedPersonIDs.contains(prospect.getId())) {
+            this.assignedPersonIDs.add(prospect.getId());
+            this.assignedPersons.add(prospect);
+        }
+    }
+
+    public void removePerson(Person prospect) {
+        if (prospect != null && this.assignedPersonIDs.contains(prospect.getId())) {
+            this.assignedPersonIDs.remove(prospect.getId());
+            this.assignedPersons.remove(prospect);
+        }
+    }
+
+    public void removePersonID(UUID personID) {
+        this.assignedPersonIDs.remove(personID);
+    }
+
+    public ArrayList<UUID> getAssignedPersonIDs() {
+        return assignedPersonIDs;
+    }
+
+    public void updateAssignedPersons(Campaign campaign) throws UpdateException {
+        // Requires that the Campaign is up to date.
+        ArrayList<UUID> foundPersonIDs = new ArrayList<>();
+        ArrayList<UUID> missingPersonIDs = new ArrayList<>();
+        if (this.assignedPersonIDs != null && this.assignedPersons != null) {
+            Person prospect = null;
+            for (UUID personID: this.assignedPersonIDs) {
+                try {
+                    prospect = campaign.getPerson(personID);
+                } catch (Exception e) {
+                    LOGGER.error(String.format("Could not find person with ID: '%s'", personID));
+                }
+
+                if (prospect != null) {
+                    foundPersonIDs.add(personID);
+                    assignedPersons.add(prospect);
+                } else {
+                    missingPersonIDs.add(personID);
+                }
+            }
+
+            // Throw here so as many IDs can be found as possible
+            if (foundPersonIDs.size() != this.assignedPersonIDs.size()) {
+                throw new UpdateException(String.format("Could not find persons with IDs: '%s'", missingPersonIDs));
+            }
+        }
+    }
+
+    public ArrayList<Person> getAssignedPersons() {
+        return assignedPersons;
+    }
+}
+
+class UpdateException extends Exception {
+    public UpdateException(String message) {
+        super(message);
     }
 }
