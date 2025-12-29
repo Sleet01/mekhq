@@ -1,6 +1,5 @@
 package mekhq.campaign.espionage;
 
-import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
 import org.junit.jupiter.api.Test;
 
 import static mekhq.campaign.espionage.IntelRating.FINANCIAL_NAME;

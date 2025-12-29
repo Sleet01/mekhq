@@ -30,33 +30,32 @@ public class StaticIntelRating extends IntelRating {
 
     @Override
     public void ageAllIntelByOne() {
-
+        // pass
     }
-
 
     @Override
     public void setAnIntelToLevel(String name, int level) {
-
+        // pass
     }
 
     @Override
     public void setAllIntelToLevel(int level) {
-
+        // pass
     }
 
     @Override
     public void ageAllIntel(int delta) {
-
+        // pass
     }
 
     @Override
     public void ageAnIntel(String name, int delta) {
-
+        // pass
     }
 
     @Override
     public void improveAnIntel(String name, int delta) {
-
+        // pass
     }
 }
 

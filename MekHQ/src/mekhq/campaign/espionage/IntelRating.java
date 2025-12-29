@@ -101,8 +101,8 @@ public class IntelRating {
     }
 
     /**
-     * Constructor for static Intel Ratings used by bots
-     * @param levelForAllIntel
+     * Convenience Constructor for static Intel Ratings used by bots
+     * @param levelForAllIntel  int that all levels should be set to initially
      */
     public IntelRating(int levelForAllIntel) {
         this(
@@ -310,7 +310,7 @@ public class IntelRating {
         return assignedPersonIDs;
     }
 
-    public void updateAssignedPersons(Campaign campaign) throws UpdateException {
+    public void updateAssignedPersons(Map<UUID, Person> personsMap) throws UpdateException {
         // Requires that the Campaign is up to date.
         ArrayList<UUID> foundPersonIDs = new ArrayList<>();
         ArrayList<UUID> missingPersonIDs = new ArrayList<>();
@@ -318,7 +318,7 @@ public class IntelRating {
             Person prospect = null;
             for (UUID personID: this.assignedPersonIDs) {
                 try {
-                    prospect = campaign.getPerson(personID);
+                    prospect = personsMap.get(personID);
                 } catch (Exception e) {
                     LOGGER.error(String.format("Could not find person with ID: '%s'", personID));
                 }
