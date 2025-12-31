@@ -31,7 +31,7 @@
  * affiliated with Microsoft.
  */
 
-package mekhq.campaign.espionage;
+package mekhq.campaign.espionage.inteltypes;
 
 import megamek.common.annotations.Nullable;
 

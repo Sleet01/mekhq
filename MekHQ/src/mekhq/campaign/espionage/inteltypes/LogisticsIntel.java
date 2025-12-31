@@ -31,19 +31,19 @@
  * affiliated with Microsoft.
  */
 
-package mekhq.campaign.espionage;
+package mekhq.campaign.espionage.inteltypes;
 
-public class FinancialIntel extends BasicIntel {
+public class LogisticsIntel extends BasicIntel {
 
-    public FinancialIntel() {
+    public LogisticsIntel() {
         this(0);
     }
 
-    public FinancialIntel(int level) {
+    public LogisticsIntel(int level) {
         super(level);
     }
 
-    public FinancialIntel(FinancialIntel other) {
+    public LogisticsIntel(LogisticsIntel other) {
         super(other);
     }
 }

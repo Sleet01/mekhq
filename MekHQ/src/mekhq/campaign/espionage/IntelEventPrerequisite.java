@@ -33,17 +33,55 @@
 
 package mekhq.campaign.espionage;
 
-public class PersonnelIntel extends BasicIntel {
+import megamek.common.annotations.Nullable;
 
-    public PersonnelIntel() {
-        this(0);
+import java.util.function.Supplier;
+
+/**
+ * Class that wraps Supplier&lt;Boolean&gt; with a user-parseable reason why it failed.
+ * May be replaced by anonymous class generator?
+ */
+public class IntelEventPrerequisite {
+
+    public static final String UNSPECIFIED_REASON = "unspecified";
+
+    private Supplier<Boolean> supplier;
+    private String requirement;
+
+    public IntelEventPrerequisite() {
+        this(null, UNSPECIFIED_REASON);
     }
 
-    public PersonnelIntel(int level) {
-        super(level);
+    public IntelEventPrerequisite(Supplier<Boolean> supplier, String requirement) {
+        this.supplier = supplier;
+        this.requirement = requirement;
     }
 
-    public PersonnelIntel(PersonnelIntel other) {
-        super(other);
+    public void setSupplier(Supplier<Boolean> supplier) {
+        this.supplier = supplier;
+    }
+
+    public void setRequirement(String requirement) {
+        this.requirement = requirement;
+    }
+
+    public String getRequirement() {
+        return requirement;
+    }
+
+    public boolean get() {
+        return supplier.get();
+    }
+
+    /**
+     * Returns null if supplier is not set; empty string if requirement met; reason if not met.
+     * @return String (Nullable) reason why the prereq is not met.
+     */
+    @Nullable
+    public String getReason() {
+        if (supplier != null) {
+            return (supplier.get()) ? "" : requirement;
+        }
+        return null;
     }
 }
