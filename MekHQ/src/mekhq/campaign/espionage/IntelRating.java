@@ -35,7 +35,6 @@ package mekhq.campaign.espionage;
 
 import megamek.common.annotations.Nullable;
 import megamek.logging.MMLogger;
-import mekhq.campaign.Campaign;
 import mekhq.campaign.personnel.Person;
 
 import java.util.ArrayList;
