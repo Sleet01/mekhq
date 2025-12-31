@@ -33,17 +33,32 @@
 
 package mekhq.campaign.espionage;
 
-public class LocalIntel extends BasicIntel {
+import megamek.common.Player;
+import mekhq.campaign.Campaign;
 
-    public LocalIntel() {
-        this(0);
+public class EspionageFactory {
+
+    private static EspionageFactory instance;
+    // Probably some info about various intel agencies and factions goes here
+
+    private EspionageFactory() {};
+
+    public static EspionageFactory getInstance() {
+        if(instance == null) {
+            instance = new EspionageFactory();
+        }
+        return instance;
     }
 
-    public LocalIntel(int level) {
-        super(level);
+    public static IntelEvent generateBasicEvent(Campaign campaign, SphereOfInfluence soi) {
+        IntelEvent event = new IntelEvent();
+        // TODO: fill in
+        return event;
     }
 
-    public LocalIntel(LocalIntel other) {
-        super(other);
+    public static IntelItem generateBasicItem(Campaign campaign, SphereOfInfluence soi) {
+        IntelItem item = new IntelItem();
+        // TODO: fill in
+        return item;
     }
 }

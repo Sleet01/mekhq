@@ -35,6 +35,15 @@ package mekhq.campaign.espionage;
 
 import megamek.common.annotations.Nullable;
 import megamek.logging.MMLogger;
+import mekhq.campaign.espionage.inteltypes.BasicIntel;
+import mekhq.campaign.espionage.inteltypes.CommsIntel;
+import mekhq.campaign.espionage.inteltypes.CounterIntel;
+import mekhq.campaign.espionage.inteltypes.FinancialIntel;
+import mekhq.campaign.espionage.inteltypes.ForcesIntel;
+import mekhq.campaign.espionage.inteltypes.LocalIntel;
+import mekhq.campaign.espionage.inteltypes.LogisticsIntel;
+import mekhq.campaign.espionage.inteltypes.PersonnelIntel;
+import mekhq.campaign.espionage.inteltypes.PositionIntel;
 import mekhq.campaign.personnel.Person;
 
 import java.util.ArrayList;

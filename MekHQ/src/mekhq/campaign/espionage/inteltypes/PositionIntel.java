@@ -31,19 +31,52 @@
  * affiliated with Microsoft.
  */
 
-package mekhq.campaign.espionage;
+package mekhq.campaign.espionage.inteltypes;
 
-public class CommsIntel extends BasicIntel {
+import java.util.ArrayList;
 
-    public CommsIntel() {
-        this(0);
+public class PositionIntel extends BasicIntel {
+
+    private ArrayList<Integer> knownPositions;
+
+    public PositionIntel() {
+        this(0, new ArrayList<>());
     }
 
-    public CommsIntel(int level) {
+    public PositionIntel(int level) {
+        this(level, new ArrayList<>());
+    }
+
+    public PositionIntel(int level, ArrayList<Integer> knownPositions) {
         super(level);
+        this.knownPositions = knownPositions;
     }
 
-    public CommsIntel(CommsIntel commsIntel) {
-        super(commsIntel);
+    public PositionIntel(PositionIntel other) {
+        super(other);
+        this.knownPositions = new ArrayList<Integer>(other.knownPositions);
+    }
+
+    /**
+     * Creates copy of knownPositions
+     * @return ArrayList copy of all knownPositions
+     */
+    public ArrayList<Integer> getKnownPositions() {
+        return new ArrayList<>(knownPositions);
+    }
+
+    /**
+     * Returns true if position of ID'ed unit is known, _or_ if ID is default (false confidence)
+     * @param ID
+     * @return true if known / ID is default, otherwise false
+     */
+    public boolean getKnown(int ID) {
+        return knownPositions.contains(ID);
+    }
+
+    public void addKnown(int ID) {
+        if (!locked) {
+            knownPositions.add(ID);
+        }
     }
 }
