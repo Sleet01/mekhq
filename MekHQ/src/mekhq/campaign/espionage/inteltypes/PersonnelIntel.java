@@ -31,19 +31,19 @@
  * affiliated with Microsoft.
  */
 
-package mekhq.campaign.espionage;
+package mekhq.campaign.espionage.inteltypes;
 
-public class CounterIntel extends BasicIntel {
+public class PersonnelIntel extends BasicIntel {
 
-    public CounterIntel() {
+    public PersonnelIntel() {
         this(0);
     }
 
-    public CounterIntel(int level) {
+    public PersonnelIntel(int level) {
         super(level);
     }
 
-    public CounterIntel(CounterIntel other) {
+    public PersonnelIntel(PersonnelIntel other) {
         super(other);
     }
 }

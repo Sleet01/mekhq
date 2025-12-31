@@ -178,6 +178,14 @@ public class IntelItem {
         this.outcomes = outcomes;
     }
 
+    public void removeOutcome(IntelOutcome outcome) {
+        this.outcomes.remove(outcome);
+    }
+
+    public void removeOutcomes(ArrayList<IntelOutcome> outcomes) {
+        this.outcomes.removeAll(outcomes);
+    }
+
     public String listOutcomeEntries() {
         StringBuilder outcomeList = new StringBuilder();
         for (IntelOutcome result : outcomes) {

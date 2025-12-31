@@ -1,5 +1,8 @@
 package mekhq.campaign.espionage;
 
+import mekhq.campaign.espionage.inteltypes.BasicIntel;
+import mekhq.campaign.espionage.inteltypes.CounterIntel;
+import mekhq.campaign.espionage.inteltypes.FinancialIntel;
 import org.junit.jupiter.api.Test;
 
 import static mekhq.campaign.espionage.IntelRating.FINANCIAL_NAME;

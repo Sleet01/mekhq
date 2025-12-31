@@ -1,6 +1,7 @@
 package mekhq.campaign.espionage;
 
 import megamek.common.units.Entity;
+import mekhq.campaign.espionage.inteltypes.ForcesIntel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -8,9 +9,9 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 
-import static mekhq.campaign.espionage.ForcesIntel.DEFAULT_ID;
-import static mekhq.campaign.espionage.BasicIntel.HIGHEST_LEVEL;
-import static mekhq.campaign.espionage.BasicIntel.LOWEST_LEVEL;
+import static mekhq.campaign.espionage.inteltypes.ForcesIntel.DEFAULT_ID;
+import static mekhq.campaign.espionage.inteltypes.BasicIntel.HIGHEST_LEVEL;
+import static mekhq.campaign.espionage.inteltypes.BasicIntel.LOWEST_LEVEL;
 import static org.junit.jupiter.api.Assertions.*;
 import static testUtilities.MHQTestUtilities.getEntityForUnitTesting;
 

@@ -31,7 +31,7 @@
  * affiliated with Microsoft.
  */
 
-package mekhq.campaign.espionage;
+package mekhq.campaign.espionage.inteltypes;
 
 /**
  * Base class for storing intelligence Information Levels
