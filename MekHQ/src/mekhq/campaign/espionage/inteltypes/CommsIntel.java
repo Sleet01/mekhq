@@ -33,6 +33,12 @@
 
 package mekhq.campaign.espionage.inteltypes;
 
+import megamek.Version;
+import mekhq.campaign.Campaign;
+import org.w3c.dom.Node;
+
+import java.text.ParseException;
+
 public class CommsIntel extends BasicIntel {
 
     public CommsIntel() {
@@ -45,5 +51,9 @@ public class CommsIntel extends BasicIntel {
 
     public CommsIntel(CommsIntel commsIntel) {
         super(commsIntel);
+    }
+
+    public static CommsIntel generateInstanceFromXML(Node node, Campaign campaign, Version version) {
+        return (CommsIntel) BasicIntel.generateInstanceFromXML(node, campaign, version);
     }
 }

@@ -33,6 +33,10 @@
 
 package mekhq.campaign.espionage.inteltypes;
 
+import megamek.Version;
+import mekhq.campaign.Campaign;
+import org.w3c.dom.Node;
+
 public class FinancialIntel extends BasicIntel {
 
     public FinancialIntel() {
@@ -45,5 +49,9 @@ public class FinancialIntel extends BasicIntel {
 
     public FinancialIntel(FinancialIntel other) {
         super(other);
+    }
+
+    public static FinancialIntel generateInstanceFromXML(Node node, Campaign campaign, Version version) {
+        return (FinancialIntel) BasicIntel.generateInstanceFromXML(node, campaign, version);
     }
 }

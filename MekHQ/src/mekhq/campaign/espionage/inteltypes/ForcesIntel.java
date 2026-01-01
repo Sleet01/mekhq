@@ -33,8 +33,15 @@
 
 package mekhq.campaign.espionage.inteltypes;
 
+import megamek.Version;
 import megamek.common.annotations.Nullable;
+import mekhq.campaign.Campaign;
+import mekhq.utilities.MHQXMLUtility;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Random;
@@ -139,5 +146,52 @@ public class ForcesIntel extends BasicIntel {
     public @Nullable String getRandomEntityName() {
         SimpleEntry<String, Integer> entry = knownEntities.get(new Random().nextInt(knownEntities.size()));
         return entry.getKey();
+    }
+
+    public static ForcesIntel generateInstanceFromXML(Node node, Campaign campaign, Version version) {
+        return (ForcesIntel) BasicIntel.generateInstanceFromXML(node, campaign, version);
+    }
+
+    protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
+        indent = super.writeToXMLBegin(campaign, pw, indent);
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "knownEntities");
+        // Write list of known entities with description and ID (may be default)
+        for (SimpleEntry<String, Integer> entry : knownEntities) {
+            MHQXMLUtility.writeSimpleXMLTag(pw, indent, "entity", entry.getKey(),
+                  entry.getValue().toString());
+        }
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "knownEntities");
+        return indent;
+    }
+
+
+    public void loadFieldsFromXmlNode(Campaign campaign, Version version, Node node) throws ParseException {
+        super.loadFieldsFromXmlNode(campaign, version, node);
+
+        NodeList childNodes = node.getChildNodes();
+
+        for (int x = 0; x < childNodes.getLength(); x++) {
+            Node item = childNodes.item(x);
+
+            try {
+                if (item.getNodeName().equalsIgnoreCase("knownEntities")) {
+                    NodeList entries = item.getChildNodes();
+                    for (int y = 0; y < entries.getLength(); y++) {
+                        Node entry = entries.item(y);
+                        if (entry.getNodeName().equalsIgnoreCase("entity")) {
+                            String content = entry.getTextContent();
+                            knownEntities.add(
+                                  new SimpleEntry<>(
+                                        content.split(",")[0],
+                                        Integer.parseInt(content.split(",")[1])
+                                  )
+                            );
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.error("", e);
+            }
+        }
     }
 }

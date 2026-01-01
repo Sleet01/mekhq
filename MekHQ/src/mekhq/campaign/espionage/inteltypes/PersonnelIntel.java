@@ -33,6 +33,10 @@
 
 package mekhq.campaign.espionage.inteltypes;
 
+import megamek.Version;
+import mekhq.campaign.Campaign;
+import org.w3c.dom.Node;
+
 public class PersonnelIntel extends BasicIntel {
 
     public PersonnelIntel() {
@@ -45,5 +49,9 @@ public class PersonnelIntel extends BasicIntel {
 
     public PersonnelIntel(PersonnelIntel other) {
         super(other);
+    }
+
+    public static PersonnelIntel generateInstanceFromXML(Node node, Campaign campaign, Version version) {
+        return (PersonnelIntel) BasicIntel.generateInstanceFromXML(node, campaign, version);
     }
 }
