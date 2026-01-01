@@ -1,10 +1,27 @@
 package mekhq.campaign.espionage;
 
+import megamek.Version;
 import megamek.common.units.Entity;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.espionage.inteltypes.ForcesIntel;
+import mekhq.campaign.parts.Part;
+import mekhq.utilities.MHQXMLUtility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
@@ -139,5 +156,48 @@ class ForcesIntelTest {
 
         assertThrows(IllegalArgumentException.class, () -> forcesIntel.setLevel(-1 + LOWEST_LEVEL));
         assertThrows(IllegalArgumentException.class, () -> forcesIntel.setLevel(1 + HIGHEST_LEVEL));
+    }
+
+    @Test
+    void testSerializeToXML() throws IOException {
+        Campaign mockCampaign = Mockito.mock(Campaign.class);
+        ForcesIntel forcesIntel = new ForcesIntel(10);
+        try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
+            forcesIntel.writeToXML(mockCampaign, pw, 0);
+
+            assertEquals("<intel level=\"10\" type=\"mekhq.campaign.espionage.inteltypes.ForcesIntel\">" +
+                               "\t<locked>false</locked>\t<knownEntities>\t</knownEntities></intel>",
+                  sw.toString().replaceAll("\\n|\\r\\n", ""));
+        }
+    }
+
+    @Test
+    void testDeserializeFromXML() throws IOException, ParserConfigurationException, SAXException {
+        Campaign mockCampaign = Mockito.mock(Campaign.class);
+        int level = 6;
+        String entityDesc = "Mek A";
+        int entityId = 13;
+
+        ForcesIntel forcesIntel = new ForcesIntel(level);
+        forcesIntel.addKnownEntity(entityDesc, entityId);
+
+        String xmlBlock;
+
+        try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
+            forcesIntel.writeToXML(mockCampaign, pw, 0);
+            xmlBlock = sw.toString();
+        }
+
+        // Using factory get an instance of document builder
+        DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
+
+        // Parse using builder to get DOM representation of the XML file
+        Document xmlDoc = db.parse(new ByteArrayInputStream(xmlBlock.getBytes()));
+        Element node = xmlDoc.getDocumentElement();
+        ForcesIntel deserialized = ForcesIntel.generateInstanceFromXML( node, mockCampaign,new Version());
+
+        assertEquals(level, deserialized.getLevel());
+        assertEquals(entityDesc, deserialized.getKnownEntitiesList().get(0).getKey());
+        assertEquals(entityId, deserialized.getKnownEntitiesList().get(0).getValue());
     }
 }

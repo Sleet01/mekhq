@@ -33,7 +33,17 @@
 
 package mekhq.campaign.espionage.inteltypes;
 
+import megamek.Version;
+import mekhq.campaign.Campaign;
+import mekhq.utilities.MHQXMLUtility;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.PrintWriter;
+import java.text.ParseException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class PositionIntel extends BasicIntel {
 
@@ -79,4 +89,41 @@ public class PositionIntel extends BasicIntel {
             knownPositions.add(ID);
         }
     }
+
+    public static PositionIntel generateInstanceFromXML(Node node, Campaign campaign, Version version) {
+        return (PositionIntel) BasicIntel.generateInstanceFromXML(node, campaign, version);
+    }
+
+    protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
+        indent = super.writeToXMLBegin(campaign, pw, indent);
+        // Write list of known positions
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "knownPositions", knownPositions);
+        return indent;
+    }
+
+
+    public void loadFieldsFromXmlNode(Campaign campaign, Version version, Node node) throws ParseException {
+        super.loadFieldsFromXmlNode(campaign, version, node);
+
+        NodeList childNodes = node.getChildNodes();
+
+        for (int x = 0; x < childNodes.getLength(); x++) {
+            Node item = childNodes.item(x);
+
+            try {
+                // Not using stream because it looks awful
+                if (item.getNodeName().equalsIgnoreCase("knownEntities")) {
+                    knownPositions = new ArrayList<Integer>();
+
+                    String[] entries = item.getTextContent().split(",");
+                    for (String entry : entries) {
+                        knownPositions.add(Integer.parseInt(entry));
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.error("", e);
+            }
+        }
+    }
+
 }

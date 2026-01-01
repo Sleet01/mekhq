@@ -33,6 +33,10 @@
 
 package mekhq.campaign.espionage.inteltypes;
 
+import megamek.Version;
+import mekhq.campaign.Campaign;
+import org.w3c.dom.Node;
+
 public class CounterIntel extends BasicIntel {
 
     public CounterIntel() {
@@ -45,5 +49,9 @@ public class CounterIntel extends BasicIntel {
 
     public CounterIntel(CounterIntel other) {
         super(other);
+    }
+
+    public static CounterIntel generateInstanceFromXML(Node node, Campaign campaign, Version version) {
+        return (CounterIntel) BasicIntel.generateInstanceFromXML(node, campaign, version);
     }
 }
