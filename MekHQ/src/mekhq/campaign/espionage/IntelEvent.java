@@ -33,9 +33,12 @@
 
 package mekhq.campaign.espionage;
 
+import mekhq.MekHQ;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.function.Supplier;
 
 public class IntelEvent {
@@ -47,6 +50,8 @@ public class IntelEvent {
         STARTED,
         // If any testFunctions have passed
         PARTIALLY_COMPLETED,
+        // If all testFunctions have passed
+        COMPLETED,
         // If end date has passed without achieving one of the completion types
         EXPIRED,
         // Completion types
@@ -54,6 +59,10 @@ public class IntelEvent {
         FAILED,
         DRAW
     }
+
+    protected final transient ResourceBundle resources = ResourceBundle.getBundle(
+          "mekhq.resources.Espionage",
+          MekHQ.getMHQOptions().getLocale());
 
     private EventState state = EventState.NOT_STARTED;
 
@@ -278,19 +287,80 @@ public class IntelEvent {
         this.outcomes.addAll(outcomes);
     }
 
+    public EventState getState() {
+        return state;
+    }
+
     public String update(LocalDate date) {
         StringBuilder builder = new StringBuilder();
 
         // Update state if necessary.
         EventState newState = switch (state) {
+            // Not-started events start on or after their start date
             case NOT_STARTED -> (date.equals(startDate) || date.isAfter(startDate)) ? EventState.STARTED : EventState.NOT_STARTED;
-            case PARTIALLY_COMPLETED, STARTED -> (date.isAfter(endDate)) ? EventState.EXPIRED : EventState.STARTED;
-            case EXPIRED, SUCCEEDED, FAILED, DRAW -> state;
+            // Incomplete events expire after their end date
+            case PARTIALLY_COMPLETED, STARTED -> (date.isAfter(endDate)) ? EventState.EXPIRED : state;
+            // Other state transitions are handled by defined outcomes
+            case EXPIRED, COMPLETED, SUCCEEDED, FAILED, DRAW -> state;
         };
 
-        // TODO: complete this code.
+        // Print if an event has started
+        if (state == EventState.NOT_STARTED && newState == EventState.STARTED) {
+            builder.append(String.format(resources.getString("event.started.text"), title))
+                  .append(System.lineSeparator());
+        }
+
+        // Print if an event has expired
+        if (state != EventState.EXPIRED && newState == EventState.EXPIRED) {
+            builder.append(String.format(resources.getString("event.expired.text"), title))
+                  .append(System.lineSeparator());
+        }
+
+        // Apply new state
+        state = newState;
+
+        // Check for Started -> Partially Complete transition using testFunctions
+
+        // See if we can partially or fully complete this event now.
+        // Events without any testFunctions complete as soon as they start and are never expired.
+        if (testFunctions.isEmpty()) {
+            if (state == EventState.STARTED) {
+                state = EventState.COMPLETED;
+                builder.append(String.format(resources.getString("event.completed.text"), title))
+                      .append(System.lineSeparator());
+            }
+        } else {
+            // Count the number of passing testFunctions
+            int completedTests = (int) testFunctions.stream().filter(Supplier::get).count();
+
+            if (completedTests > 0) {
+                // If all are passing and the event has not expired, mark it completed
+                if (completedTests == testFunctions.size() && state != EventState.EXPIRED) {
+                    state = EventState.COMPLETED;
+                    builder.append(String.format(resources.getString("event.completed.text"), title))
+                          .append(System.lineSeparator());
+                } else {
+                    // If some are passing, we are _partially_ completed
+                    // Only check for STARTED; can't go back from PARTIALLY_COMPLETED, only forward.
+                    if (state == EventState.STARTED) {
+                        state = EventState.PARTIALLY_COMPLETED;
+                        builder.append(String.format(resources.getString("event.partially.text"), title))
+                              .append(System.lineSeparator());
+                    }
+                }
+            }
+        }
+
+        // Now evaluate the IntelOutcomes.
+        // If order is important, the EspionageFactory is responsible for ensuring correct order.
+        for (IntelOutcome outcome : outcomes) {
+            if (outcome.checkAchieved()) {
+                builder.append(String.format(resources.getString("event.outcome.text"), title, outcome.getTitle()))
+                      .append(System.lineSeparator());
+                outcome.apply();
+            }
+        }
 
         return builder.toString();
     }
-
 }

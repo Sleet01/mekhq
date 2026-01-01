@@ -45,7 +45,7 @@ public class IntelEventPrerequisite {
 
     public static final String UNSPECIFIED_REASON = "unspecified";
 
-    private Supplier<Boolean> supplier;
+    private Supplier<Boolean> supplier = null;
     private String requirement;
 
     public IntelEventPrerequisite() {
@@ -67,6 +67,10 @@ public class IntelEventPrerequisite {
 
     public String getRequirement() {
         return requirement;
+    }
+
+    public Supplier<Boolean> getSupplier() {
+        return supplier;
     }
 
     public boolean get() {
