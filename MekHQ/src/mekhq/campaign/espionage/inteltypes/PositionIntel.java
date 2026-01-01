@@ -41,9 +41,7 @@ import org.w3c.dom.NodeList;
 
 import java.io.PrintWriter;
 import java.text.ParseException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class PositionIntel extends BasicIntel {
 
@@ -112,9 +110,8 @@ public class PositionIntel extends BasicIntel {
 
             try {
                 // Not using stream because it looks awful
-                if (item.getNodeName().equalsIgnoreCase("knownEntities")) {
-                    knownPositions = new ArrayList<Integer>();
-
+                // Assumes instantiated via the default constructor, which creates knownPositions
+                if (item.getNodeName().equalsIgnoreCase("knownPositions")) {
                     String[] entries = item.getTextContent().split(",");
                     for (String entry : entries) {
                         knownPositions.add(Integer.parseInt(entry));
