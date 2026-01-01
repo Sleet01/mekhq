@@ -37,6 +37,7 @@ import megamek.common.Player;
 import megamek.common.annotations.Nullable;
 import megamek.logging.MMLogger;
 import mekhq.campaign.Campaign;
+import mekhq.campaign.espionage.IntelEvent.EventState;
 import mekhq.campaign.mission.Mission;
 
 import java.util.ArrayList;
@@ -163,6 +164,9 @@ public class SphereOfInfluence {
 
     /**
      * Iterate over all the events in this SOI, check for completion / achievement, apply IntelOutcomes.
+     *
+     * TODO: determine if event and outcome removal would be better handled _using_ IntelOutcomes at update?
+     *
      * Remove completed events and timed-out events.
      * @return report String
      */
@@ -171,9 +175,16 @@ public class SphereOfInfluence {
 
         for (int id : eventsMap.keySet()) {
             ArrayList<IntelEvent> events = eventsMap.get(id);
+            ArrayList<IntelEvent> doneEvents = new ArrayList<>();
 
+            // Find all EXPIRED events and clean them up.
             for (IntelEvent event : events) {
+                if (event.getState().ordinal() >= EventState.EXPIRED.ordinal()) {
+                    doneEvents.add(event);
+                }
                 ArrayList<IntelOutcome> done = new ArrayList<>();
+
+                // Find all outcomes that can be completed, apply them, and remove them.
                 for (IntelOutcome outcome : event.getOutcomes()) {
                     if (outcome.checkAchieved()) {
                         builder.append(outcome.toString()).append("\n");
@@ -182,13 +193,12 @@ public class SphereOfInfluence {
                     }
                 }
                 event.removeOutcomes(done);
-
-
-
-
             }
-        }
 
+            // Remove done events... is this a good idea?
+            events.removeAll(doneEvents);
+            eventsMap.put(id, events);
+        }
 
         return builder.toString();
     }
