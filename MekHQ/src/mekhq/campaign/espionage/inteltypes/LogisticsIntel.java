@@ -33,6 +33,10 @@
 
 package mekhq.campaign.espionage.inteltypes;
 
+import megamek.Version;
+import mekhq.campaign.Campaign;
+import org.w3c.dom.Node;
+
 public class LogisticsIntel extends BasicIntel {
 
     public LogisticsIntel() {
@@ -45,5 +49,9 @@ public class LogisticsIntel extends BasicIntel {
 
     public LogisticsIntel(LogisticsIntel other) {
         super(other);
+    }
+
+    public static LogisticsIntel generateInstanceFromXML(Node node, Campaign campaign, Version version) {
+        return (LogisticsIntel) BasicIntel.generateInstanceFromXML(node, campaign, version);
     }
 }

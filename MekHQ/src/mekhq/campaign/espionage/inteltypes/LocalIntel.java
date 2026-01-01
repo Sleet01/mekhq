@@ -33,6 +33,10 @@
 
 package mekhq.campaign.espionage.inteltypes;
 
+import megamek.Version;
+import mekhq.campaign.Campaign;
+import org.w3c.dom.Node;
+
 public class LocalIntel extends BasicIntel {
 
     public LocalIntel() {
@@ -45,5 +49,9 @@ public class LocalIntel extends BasicIntel {
 
     public LocalIntel(LocalIntel other) {
         super(other);
+    }
+
+    public static LocalIntel generateInstanceFromXML(Node node, Campaign campaign, Version version) {
+        return (LocalIntel) BasicIntel.generateInstanceFromXML(node, campaign, version);
     }
 }

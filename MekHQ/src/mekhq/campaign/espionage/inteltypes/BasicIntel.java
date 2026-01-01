@@ -33,10 +33,24 @@
 
 package mekhq.campaign.espionage.inteltypes;
 
+import megamek.Version;
+import megamek.logging.MMLogger;
+import mekhq.campaign.Campaign;
+import mekhq.campaign.mission.AtBContract;
+import mekhq.campaign.mission.Mission;
+import mekhq.utilities.MHQXMLUtility;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.PrintWriter;
+import java.text.ParseException;
+
 /**
  * Base class for storing intelligence Information Levels
  */
-public class BasicIntel {
+public abstract class BasicIntel {
+    protected static final MMLogger LOGGER = MMLogger.create(AtBContract.class);
     public final static int HIGHEST_LEVEL = 12;
     public final static int LOWEST_LEVEL = -12;
 
@@ -110,5 +124,59 @@ public class BasicIntel {
 
     public boolean isLocked() {
         return locked;
+    }
+
+    public static BasicIntel generateInstanceFromXML(Node node, Campaign campaign, Version version) {
+        BasicIntel retVal = null;
+        NamedNodeMap attrs = node.getAttributes();
+        Node classNameNode = attrs.getNamedItem("type");
+        String className = classNameNode.getTextContent();
+
+        try {
+            retVal = (BasicIntel) Class.forName(className).getDeclaredConstructor().newInstance();
+            retVal.loadFieldsFromXmlNode(campaign, version, node);
+
+        } catch (Exception ex) {
+            LOGGER.error("", ex);
+        }
+
+        return retVal;
+    }
+
+    public void writeToXML(Campaign campaign, final PrintWriter pw, int indent) {
+        indent = writeToXMLBegin(campaign, pw, indent);
+        writeToXMLEnd(pw, indent);
+    }
+
+    protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "intel", "level", level, "type", getClass());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "locked", locked);
+        return indent;
+    }
+
+    protected void writeToXMLEnd(final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "intel");
+    }
+
+    public void loadFieldsFromXmlNode(Campaign campaign, Version version, Node node) throws ParseException {
+        // Level is stored as an attribute of the node
+        try {
+            level = Integer.parseInt(node.getAttributes().getNamedItem("level").getNodeValue());
+        } catch (Exception e) {
+            LOGGER.error("", e);
+        }
+
+        NodeList childNodes = node.getChildNodes();
+
+        for (int x = 0; x < childNodes.getLength(); x++) {
+            Node item = childNodes.item(x);
+            try {
+                if (item.getNodeName().equalsIgnoreCase("locked")) {
+                    locked = Boolean.parseBoolean(item.getTextContent());
+                }
+            } catch (Exception e) {
+                LOGGER.error("", e);
+            }
+        }
     }
 }
