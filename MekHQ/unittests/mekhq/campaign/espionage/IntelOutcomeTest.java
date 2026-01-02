@@ -33,6 +33,7 @@
 
 package mekhq.campaign.espionage;
 
+import megamek.Version;
 import megamek.common.Player;
 import megamek.common.enums.SkillLevel;
 import megamek.common.equipment.EquipmentType;
@@ -42,17 +43,28 @@ import megamek.common.units.Mek;
 import megamek.common.units.Tank;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.campaignOptions.CampaignOptions;
+import mekhq.campaign.espionage.inteltypes.PositionIntel;
 import mekhq.campaign.personnel.Person;
 import mekhq.campaign.personnel.skills.RandomSkillPreferences;
+import mekhq.utilities.MHQXMLUtility;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -108,7 +120,7 @@ class IntelOutcomeTest {
         IntelItem macguffin = new IntelItem();
 
         IntelOutcome findMacGuffin = new IntelOutcome();
-        Supplier<Boolean> testFunction = () -> macguffin.isDiscovered();
+        ISerializableSupplier<Boolean> testFunction = () -> macguffin.isDiscovered();
         findMacGuffin.setTestFunction(testFunction);
 
         assertFalse(testFunction.get());
@@ -120,6 +132,9 @@ class IntelOutcomeTest {
         assertTrue(findMacGuffin.checkAchieved());
     }
 
+    /**
+     * NOTE: this test is not actual serializable due to closure over references in the test body!
+     */
     @Test
     void setApplyFunction() {
         // This time the Item is a Bad Guy, but we want to kill one of the player's agents
@@ -134,11 +149,11 @@ class IntelOutcomeTest {
         IntelOutcome killAPerson = new IntelOutcome();
 
         // Test function: fire if badguy was captured rather than destroyed
-        Supplier<Boolean> testFunction = () -> badguy.isCaptured();
+        ISerializableSupplier<Boolean> testFunction = () -> badguy.isCaptured();
         killAPerson.setTestFunction(testFunction);
 
         // What will happen
-        Runnable killAgent = () -> npcAgent.setHits(6);
+        ISerializableRunnable killAgent = () -> npcAgent.setHits(6);
         killAPerson.setApplyFunction(killAgent);
 
         assertFalse(killAPerson.checkAchieved());
@@ -156,6 +171,9 @@ class IntelOutcomeTest {
         assertEquals(6, npcAgent.getHits());
     }
 
+    /**
+     * NOTE: this test is not actual serializable due to closure over references in the test body!
+     */
     @Test
     void testGiveUnitsToPlayerOnSuccess() {
         // Give the player two shiny new Shadowhawks if they deliver the MacGuffin to their employer
@@ -173,7 +191,7 @@ class IntelOutcomeTest {
         deliveryCompleted.addLinkedObjects(new ArrayList(List.of(prize1, prize2)));
 
         // This test requires four things to be true.
-        Supplier<Boolean> testFunction = () -> { return
+        ISerializableSupplier<Boolean> testFunction = () -> { return
             (incriminatingPhotos.isDiscovered() &&
                    incriminatingPhotos.isCaptured() &&
                    incriminatingPhotos.isDeciphered() &&
@@ -185,7 +203,7 @@ class IntelOutcomeTest {
         deliveryCompleted.setBeneficiaryId(player.getId());
 
         // The IntelOutcome has the prizes, so the applyFunction can be relatively simple.
-        Runnable applyFunction = () -> {
+        ISerializableRunnable applyFunction = () -> {
             for (Object item : deliveryCompleted.getLinkedObjects()) {
                 Mek prize = (Mek) item;
                 // Give the prize to the _current_ beneficiary; allows for runtime shenanigans.
@@ -225,7 +243,7 @@ class IntelOutcomeTest {
         IntelOutcome outcome = new IntelOutcome();
         outcome.setTitle(mainTitle);
 
-        Supplier<Boolean> testFunction = () -> buyACar.isCaptured();
+        ISerializableSupplier<Boolean> testFunction = () -> buyACar.isCaptured();
         outcome.setTestFunction(testFunction);
 
         assertEquals(mainTitle, outcome.toString());
@@ -238,5 +256,123 @@ class IntelOutcomeTest {
 
         buyACar.setCaptured(true);
         assertEquals(mainTitle + itemCount2 + complete, outcome.toString());
+    }
+
+    /**
+     * NOTE: this test *is* serializable due to using reference IDs and Singleton getInstance() calls.
+     */
+    @Test
+    void testSerializationIncludingTestFunctionAndApplyFunction()
+          throws IOException, ParserConfigurationException, SAXException {
+        Campaign mockCampaign = Mockito.mock(Campaign.class);
+
+        // Set up SOI for lookups
+        SphereOfInfluence soi = new SphereOfInfluence();
+        soi.setSoiId(1);
+
+        EspionageManager espionageManager = EspionageManager.getInstance();
+        espionageManager.addSphereOfInfluence(soi);
+
+        String name = "Incriminating Photos";
+        IntelItem incriminatingPhotos = new IntelItem();
+        incriminatingPhotos.setItemName(name);
+        incriminatingPhotos.setItemId(1);
+
+        // Note: these are serializable so can be saved in the IntelOutcome!
+        Mek prize1 = (Mek) getShadowHawk();
+        Mek prize2 = (Mek) getShadowHawk();
+
+        // IntelOutcome defines one outcome of an IntelItem (usually at the end of a Mission / SOI lifetime)
+        // or IntelEvent (usually one of several possible outcomes depending on defined checks)
+        String title = name + " Delivered";
+        soi.addIntelItem(incriminatingPhotos);
+        IntelOutcome deliveryCompleted = new IntelOutcome();
+        deliveryCompleted.setTitle(title);
+        deliveryCompleted.addLinkedObjects(new ArrayList(List.of(prize1, prize2)));
+
+        // Have to use concrete values, lookups, and calls to Singletons to avoid trying to serialize the whole unittest
+        // object itself!
+        ISerializableSupplier<Boolean> testFunction = () -> {
+            SphereOfInfluence targetSOI = EspionageManager.getInstance().getSphereOfInfluence(1);
+            IntelItem target = (targetSOI != null) ? targetSOI.getIntelItem(1) : null;
+            if (target != null) {
+                return
+                      (target.isDiscovered() &&
+                             target.isCaptured() &&
+                             target.isDeciphered() &&
+                             target.isDelivered());
+            }
+            return false;
+        };
+
+        deliveryCompleted.setTestFunction(testFunction);
+
+        deliveryCompleted.setBeneficiaryId(player.getId());
+
+        // The IntelOutcome has the prizes, so the applyFunction can be relatively simple.
+        // Have to use concrete values, lookups, and calls to Singletons to avoid trying to serialize the whole unittest
+        // object itself!
+        ISerializableRunnable applyFunction = () -> {
+            SphereOfInfluence targetSOI = EspionageManager.getInstance().getSphereOfInfluence(1);
+            IntelItem target = (targetSOI != null) ? targetSOI.getIntelItem(1) : null;
+            IntelOutcome outcome = (target != null) ? target.getOutcomeByTitle(title) : null;
+
+            if (outcome != null) {
+                for (Object item : outcome.getLinkedObjects()) {
+                    Mek prize = (Mek) item;
+                    // Give the prize to the _current_ beneficiary; allows for runtime shenanigans.
+                    // Except for this test, don't query the campaign, just make a new Player instance
+                    prize.setOwner(new Player(outcome.getBeneficiaryId(), "Fake player"));
+                }
+            }
+        };
+        deliveryCompleted.setApplyFunction(applyFunction);
+
+        // Let's assume the player has found, retrieved, decoded, and delivered the photos
+        // (Which should take 4 events of various kinds)
+        incriminatingPhotos.setDiscovered(true);
+        incriminatingPhotos.setCaptured(true);
+        incriminatingPhotos.setDeciphered(true);
+        incriminatingPhotos.setDelivered(true);
+
+        String xmlBlock;
+
+        // Make sure we got something in the writer.
+        try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
+            deliveryCompleted.writeToXML(mockCampaign, pw, 0);
+            xmlBlock = sw.toString();
+
+            assertFalse(xmlBlock.isEmpty());
+        }
+
+        // Using factory get an instance of document builder
+        DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
+
+        // Parse using builder to get DOM representation of the XML file
+        Document xmlDoc = db.parse(new ByteArrayInputStream(xmlBlock.getBytes()));
+        Element node = xmlDoc.getDocumentElement();
+        IntelOutcome deserialized = IntelOutcome.generateInstanceFromXML( node, mockCampaign,new Version());
+
+        // This step would normally be performed by the IntelItem deserializer but we're not there yet.
+        incriminatingPhotos.addOutcome(deserialized);
+
+        // The deserialized test function should find the correct values
+        assertTrue(deserialized.checkAchieved());
+
+        // Run the
+        if (deserialized.checkAchieved()) {
+            deserialized.apply();
+        }
+
+        // This check is a hack because we had to create a new Player with the identical ID, but it illustrates the
+        // functionality of a deserialized Runnable.
+        for (Object object : deserialized.getLinkedObjects()) {
+            if (object instanceof Mek mek) {
+                assertEquals(player.getId(), mek.getOwnerId());
+            } else {
+                // We didn't find the type of objects we expected!
+                fail();
+            }
+        }
     }
 }

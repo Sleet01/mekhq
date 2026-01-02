@@ -33,6 +33,8 @@
 
 package mekhq.campaign.espionage;
 
+import megamek.common.annotations.Nullable;
+
 import java.util.ArrayList;
 
 public class EspionageManager {
@@ -57,6 +59,15 @@ public class EspionageManager {
 
     public void addSphereOfInfluence(SphereOfInfluence sphereOfInfluence) {
         spheres.add(sphereOfInfluence);
+    }
+
+    public @Nullable SphereOfInfluence getSphereOfInfluence(int Id) {
+        for (SphereOfInfluence sphere : spheres) {
+            if (sphere.getSoiId() == Id) {
+                return sphere;
+            }
+        }
+        return null;
     }
 
     /**
