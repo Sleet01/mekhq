@@ -48,7 +48,11 @@ public class SphereOfInfluence {
 
     public static final int UNASSIGNED_MISSION = -1;
 
+    private int soiId;
     private int missionId;
+    private String title;
+    private String description;
+
     // Events will initially be generated for just the player, but bot events may be added.
     // Use Player / Bot IDs as keys for now
     private HashMap<Integer, HashMap<Integer, IntelRating>> actorsRatingsMap;
@@ -58,19 +62,94 @@ public class SphereOfInfluence {
     private ArrayList<IntelItem> items;
 
     public SphereOfInfluence() {
-         this(UNASSIGNED_MISSION, new HashMap<>(), new ArrayList<>(), new HashMap<>());
+         this(0, UNASSIGNED_MISSION, "", "", new HashMap<>(), new ArrayList<>(), new HashMap<>());
     }
 
     public SphereOfInfluence(
+          int soiId,
           int missionId,
+          String title,
+          String description,
           HashMap<Integer, HashMap<Integer, IntelRating>> actorsRatingsMap,
           ArrayList<IntelItem> items,
           HashMap<Integer, ArrayList<IntelEvent>> eventsMap
     ) {
+        this.soiId = soiId;
+        this.title = title;
+        this.description = description;
         this.missionId = missionId;
+        this.items = items;
         this.actorsRatingsMap = actorsRatingsMap;
     }
 
+    public int getSoiId() {
+        return soiId;
+    }
+
+    public void setSoiId(int soiId) {
+        this.soiId = soiId;
+    }
+
+    public int getMissionId() {
+        return missionId;
+    }
+
+    public void setMissionId(int missionId) {
+        this.missionId = missionId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public HashMap<Integer, HashMap<Integer, IntelRating>> getActorsRatingsMap() {
+        return actorsRatingsMap;
+    }
+
+    public void setActorsRatingsMap(HashMap<Integer, HashMap<Integer, IntelRating>> actorsRatingsMap) {
+        this.actorsRatingsMap = actorsRatingsMap;
+    }
+
+    public HashMap<Integer, ArrayList<IntelEvent>> getEventsMap() {
+        return eventsMap;
+    }
+
+    public void setEventsMap(HashMap<Integer, ArrayList<IntelEvent>> eventsMap) {
+        this.eventsMap = eventsMap;
+    }
+
+    public void addIntelItem(IntelItem item) {
+        items.add(item);
+    }
+
+    public void addIntelItems(ArrayList<IntelItem> items) {
+        this.items.addAll(items);
+    }
+
+    public @Nullable IntelItem getIntelItem(int itemId) {
+        for (IntelItem item : items) {
+            if (item.getItemId() == itemId) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public ArrayList<IntelItem> getItems() {
+        return items;
+    }
     /**
      * Call once after instantiating.
      * Create entries for every entity involved in this Mission:
@@ -202,4 +281,5 @@ public class SphereOfInfluence {
 
         return builder.toString();
     }
+
 }

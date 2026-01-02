@@ -1,22 +1,17 @@
-package mekhq.campaign.espionage;
+package mekhq.campaign.espionage.inteltypes;
 
 import megamek.Version;
 import megamek.common.units.Entity;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.espionage.inteltypes.ForcesIntel;
-import mekhq.campaign.parts.Part;
 import mekhq.utilities.MHQXMLUtility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
