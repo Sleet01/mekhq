@@ -37,7 +37,6 @@ import megamek.Version;
 import megamek.logging.MMLogger;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.mission.AtBContract;
-import mekhq.campaign.mission.Mission;
 import mekhq.utilities.MHQXMLUtility;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -50,7 +49,7 @@ import java.text.ParseException;
  * Base class for storing intelligence Information Levels
  */
 public abstract class BasicIntel {
-    protected static final MMLogger LOGGER = MMLogger.create(AtBContract.class);
+    protected static final MMLogger LOGGER = MMLogger.create(BasicIntel.class);
     public final static int HIGHEST_LEVEL = 12;
     public final static int LOWEST_LEVEL = -12;
 

@@ -33,15 +33,28 @@
 
 package mekhq.campaign.espionage;
 
+import megamek.Version;
+import megamek.common.annotations.Nullable;
+import megamek.logging.MMLogger;
+import mekhq.campaign.Campaign;
+import mekhq.utilities.MHQXMLUtility;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-public class IntelItem {
+public class IntelItem implements Serializable {
+    protected static final MMLogger LOGGER = MMLogger.create(IntelItem.class);
 
     public final static int UNSET_ID = -1;
 
     private LocalDate startDate;
-    private int itemID;
+    private int itemId;
     private int ownerId;
     private int possessorId;
     private String itemName;
@@ -61,10 +74,10 @@ public class IntelItem {
         this(LocalDate.now(), UNSET_ID, UNSET_ID, UNSET_ID, "", "", new ArrayList<>());
     }
 
-    public IntelItem(LocalDate startDate, int itemID, int ownerID, int possessorId,
+    public IntelItem(LocalDate startDate, int itemId, int ownerID, int possessorId,
           String itemName, String itemDescription, ArrayList<IntelOutcome> outcomes) {
         this.startDate = startDate;
-        this.itemID = itemID;
+        this.itemId = itemId;
         this.ownerId = ownerID;
         this.possessorId = possessorId;
         this.itemName = itemName;
@@ -80,12 +93,12 @@ public class IntelItem {
         this.startDate = startDate;
     }
 
-    public int getItemID() {
-        return itemID;
+    public int getItemId() {
+        return itemId;
     }
 
-    public void setItemID(int itemID) {
-        this.itemID = itemID;
+    public void setItemId(int itemId) {
+        this.itemId = itemId;
     }
 
     public int getOwnerId() {
@@ -169,8 +182,25 @@ public class IntelItem {
     }
 
     // SOI and/or Manager will likely directly edit these
+    public void addOutcome(IntelOutcome outcome) {
+        this.outcomes.add(outcome);
+    }
+
+    public void addOutcomes(ArrayList<IntelOutcome> outcomes) {
+        this.outcomes.addAll(outcomes);
+    }
+
     public ArrayList<IntelOutcome> getOutcomes() {
         return outcomes;
+    }
+
+    public @Nullable IntelOutcome getOutcomeByTitle(String title) {
+        for (IntelOutcome outcome : outcomes) {
+            if (outcome.getTitle().equals(title)) {
+                return outcome;
+            }
+        }
+        return null;
     }
 
     // SOI and/or Manager will likely edit these
@@ -200,5 +230,91 @@ public class IntelItem {
             linkedObjects.addAll(outcome.getLinkedObjects());
         }
         return linkedObjects;
+    }
+
+    public static IntelItem generateInstanceFromXML(Node node, Campaign campaign, Version version) {
+        IntelItem retVal = null;
+        NamedNodeMap attrs = node.getAttributes();
+        Node classNameNode = attrs.getNamedItem("type");
+        String className = classNameNode.getTextContent();
+
+        try {
+            retVal = (IntelItem) Class.forName(className).getDeclaredConstructor().newInstance();
+            retVal.loadFieldsFromXmlNode(campaign, version, node);
+
+        } catch (Exception ex) {
+            LOGGER.error("", ex);
+        }
+
+        return retVal;
+    }
+
+    public void writeToXML(Campaign campaign, final PrintWriter pw, int indent) {
+        indent = writeToXMLBegin(campaign, pw, indent);
+        writeToXMLEnd(pw, indent);
+    }
+
+    protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "intelitem", "itemId", itemId, "type", getClass());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "ownerId", ownerId);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "possessorId", possessorId);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "startDate", startDate.toString());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "itemName", itemName);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "description", itemDescription);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "stateFlags", discovered, captured, deciphered, delivered, destroyed, escaped);
+
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "outcomes", "count", outcomes.size());
+        for (IntelOutcome outcome : outcomes) {
+            outcome.writeToXML(campaign, pw, indent);
+        }
+        return indent;
+    }
+
+    protected void writeToXMLEnd(final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "intelItem");
+    }
+
+    public void loadFieldsFromXmlNode(Campaign campaign, Version version, Node node) throws ParseException {
+        // Level is stored as an attribute of the node
+        try {
+            itemId = Integer.parseInt(node.getAttributes().getNamedItem("level").getNodeValue());
+        } catch (Exception e) {
+            LOGGER.error("", e);
+        }
+
+        NodeList childNodes = node.getChildNodes();
+
+        for (int x = 0; x < childNodes.getLength(); x++) {
+            Node item = childNodes.item(x);
+            try {
+                if (item.getNodeName().equalsIgnoreCase("ownerId")) {
+                    ownerId = Integer.parseInt(item.getTextContent());
+                } else if (item.getNodeName().equalsIgnoreCase("possessorId")) {
+                    possessorId = Integer.parseInt(item.getTextContent());
+                } else if (item.getNodeName().equalsIgnoreCase("startDate")) {
+                    startDate = MHQXMLUtility.parseDate(item.getTextContent());
+                } else if (item.getNodeName().equalsIgnoreCase("itemName")) {
+                    itemName = item.getTextContent();
+                } else if (item.getNodeName().equalsIgnoreCase("description")) {
+                    itemDescription = item.getTextContent();
+                } else if (item.getNodeName().equalsIgnoreCase("stateFlags")) {
+                    boolean[] booleans = MHQXMLUtility.parseBooleanArray(item.getTextContent());
+                    discovered = booleans[0];
+                    captured = booleans[1];
+                    deciphered = booleans[2];
+                    delivered = booleans[3];
+                    destroyed = booleans[4];
+                    escaped = booleans[5];
+                } else if (item.getNodeName().equalsIgnoreCase("outcomes")) {
+                    NodeList outcomeNodes = item.getChildNodes();
+                    for (int y = 0; y < outcomeNodes.getLength(); y++) {
+                        IntelOutcome outcome = IntelOutcome.generateInstanceFromXML(outcomeNodes.item(y), campaign, version);
+                        outcomes.add(outcome);
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.error("", e);
+            }
+        }
     }
 }

@@ -33,18 +33,32 @@
 
 package mekhq.campaign.espionage;
 
-import java.util.ArrayList;
-import java.util.function.Supplier;
+import megamek.Version;
+import megamek.common.units.Entity;
+import megamek.logging.MMLogger;
+import mekhq.campaign.Campaign;
+import mekhq.campaign.personnel.Person;
+import mekhq.utilities.MHQXMLUtility;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-public class IntelOutcome implements IResultEvaluator {
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.text.ParseException;
+import java.util.ArrayList;
+
+public class IntelOutcome implements IResultEvaluator, Serializable {
+    protected static final MMLogger LOGGER = MMLogger.create(IntelOutcome.class);
 
     // If added here, objects will be awarded to "winner" of the IntelOutcome outcome.
     private ArrayList<Object> linkedObjects;
     private String title;
     private String description;
     private int beneficiaryId;
-    private Supplier<Boolean> testFunction;
-    private Runnable applyFunction;
+    private ISerializableSupplier<Boolean> testFunction;
+    private ISerializableRunnable applyFunction;
 
     public IntelOutcome() {
         this(new ArrayList<>());
@@ -102,11 +116,11 @@ public class IntelOutcome implements IResultEvaluator {
         this.beneficiaryId = beneficiaryId;
     }
 
-    public void setTestFunction(Supplier<Boolean> testFunction) {
+    public void setTestFunction(ISerializableSupplier<Boolean> testFunction) {
         this.testFunction = testFunction;
     }
 
-    public void setApplyFunction(Runnable applyFunction) {
+    public void setApplyFunction(ISerializableRunnable applyFunction) {
         this.applyFunction = applyFunction;
     }
 
@@ -132,5 +146,98 @@ public class IntelOutcome implements IResultEvaluator {
             representation += " (Done)";
         }
         return representation;
+    }
+
+    public static IntelOutcome generateInstanceFromXML(Node node, Campaign campaign, Version version) {
+        IntelOutcome retVal = null;
+        NamedNodeMap attrs = node.getAttributes();
+        Node classNameNode = attrs.getNamedItem("type");
+        String className = classNameNode.getTextContent();
+
+        try {
+            retVal = (IntelOutcome) Class.forName(className).getDeclaredConstructor().newInstance();
+            retVal.loadFieldsFromXmlNode(campaign, version, node);
+
+        } catch (Exception ex) {
+            LOGGER.error("", ex);
+        }
+
+        return retVal;
+    }
+
+    public void writeToXML(Campaign campaign, final PrintWriter pw, int indent) {
+        indent = writeToXMLBegin(campaign, pw, indent);
+        writeToXMLEnd(pw, indent);
+    }
+
+    protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "intelOutcome", "title", title, "type", getClass());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "description", description);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "beneficiaryId", beneficiaryId);
+        MHQXMLUtility.writeSerialCDATA(pw, indent, "testFunction", testFunction);
+        MHQXMLUtility.writeSerialCDATA(pw, indent, "applyFunction", applyFunction);
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "linkedObjects");
+        for (Object linkedObject: linkedObjects) {
+            if (linkedObject instanceof Person person) {
+                person.writeToXML(pw, indent, campaign);
+            } else if (linkedObject instanceof Entity entity) {
+                pw.println(MHQXMLUtility.writeEntityToXmlString(entity, indent, null));
+            }
+        }
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "linkedObjects");
+        return indent;
+    }
+
+    protected void writeToXMLEnd(final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "intelOutcome");
+    }
+
+    public void loadFieldsFromXmlNode(Campaign campaign, Version version, Node node) throws ParseException {
+        // Level is stored as an attribute of the node
+        try {
+            title = node.getAttributes().getNamedItem("title").getNodeValue();
+        } catch (Exception e) {
+            LOGGER.error("", e);
+        }
+
+        NodeList childNodes = node.getChildNodes();
+
+        for (int x = 0; x < childNodes.getLength(); x++) {
+            Node item = childNodes.item(x);
+            try {
+                if (item.getNodeName().equalsIgnoreCase("description")) {
+                    description = item.getTextContent();
+                } else if (item.getNodeName().equalsIgnoreCase("beneficiaryId")) {
+                    beneficiaryId = Integer.parseInt(item.getTextContent());
+                } else if (item.getNodeName().equalsIgnoreCase("testFunction")) {
+                    // CDATA entry should be the first child.
+                    Node firstChild = item.getFirstChild();
+                    if (firstChild.getNodeType() == Node.CDATA_SECTION_NODE) {
+                        testFunction =
+                              (ISerializableSupplier<Boolean>) MHQXMLUtility.parseSerialCDATA(firstChild.getNodeValue());
+                    }
+                } else if (item.getNodeName().equalsIgnoreCase("applyFunction")) {
+                    // CDATA entry should be the first child.
+                    Node firstChild = item.getFirstChild();
+                    if (firstChild.getNodeType() == Node.CDATA_SECTION_NODE) {
+                        applyFunction = (ISerializableRunnable) MHQXMLUtility.parseSerialCDATA(firstChild.getNodeValue());
+                    }
+                } else if (item.getNodeName().equalsIgnoreCase("linkedObjects")) {
+                    NodeList objectChildren = item.getChildNodes();
+                    for (int y = 0; y < objectChildren.getLength(); y++) {
+                        Node itemChild = objectChildren.item(y);
+                        if (itemChild.getNodeName().equalsIgnoreCase("person")) {
+                            Person person = Person.generateInstanceFromXML(itemChild, campaign, version);
+                            linkedObjects.add(person);
+                        } else if (itemChild.getNodeName().equalsIgnoreCase("entity")) {
+                            Entity entity = MHQXMLUtility.parseSingleEntityMul((Element) itemChild, campaign);
+                            linkedObjects.add(entity);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.error("", e);
+            }
+        }
     }
 }
