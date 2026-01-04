@@ -33,8 +33,11 @@
 
 package mekhq.campaign.espionage;
 
+import megamek.Version;
 import megamek.common.annotations.Nullable;
+import megamek.common.units.Entity;
 import megamek.logging.MMLogger;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.espionage.inteltypes.BasicIntel;
 import mekhq.campaign.espionage.inteltypes.CommsIntel;
 import mekhq.campaign.espionage.inteltypes.CounterIntel;
@@ -45,7 +48,14 @@ import mekhq.campaign.espionage.inteltypes.LogisticsIntel;
 import mekhq.campaign.espionage.inteltypes.PersonnelIntel;
 import mekhq.campaign.espionage.inteltypes.PositionIntel;
 import mekhq.campaign.personnel.Person;
+import mekhq.utilities.MHQXMLUtility;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -348,6 +358,95 @@ public class IntelRating {
 
     public ArrayList<Person> getAssignedPersons() {
         return assignedPersons;
+    }
+
+    public static IntelRating generateInstanceFromXML(Node node, Campaign campaign, Version version) {
+        IntelRating retVal = null;
+        NamedNodeMap attrs = node.getAttributes();
+        Node classNameNode = attrs.getNamedItem("type");
+        String className = classNameNode.getTextContent();
+
+        try {
+            retVal = (IntelRating) Class.forName(className).getDeclaredConstructor().newInstance();
+            retVal.loadFieldsFromXmlNode(campaign, version, node);
+
+        } catch (Exception ex) {
+            LOGGER.error("", ex);
+        }
+
+        return retVal;
+    }
+
+    public void writeToXML(Campaign campaign, final PrintWriter pw, int indent) {
+        indent = writeToXMLBegin(campaign, pw, indent);
+        writeToXMLEnd(pw, indent);
+    }
+
+    protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "intelRating", "type", getClass());
+        forcesIntel.writeToXML(campaign, pw, indent);
+        positionIntel.writeToXML(campaign, pw, indent);
+        logisticsIntel.writeToXML(campaign, pw, indent);
+        personnelIntel.writeToXML(campaign, pw, indent);
+        commsIntel.writeToXML(campaign, pw, indent);
+        financialIntel.writeToXML(campaign, pw, indent);
+        localIntel.writeToXML(campaign, pw, indent);
+        counterIntel.writeToXML(campaign, pw, indent);
+        MHQXMLUtility.writeSimpleXMLTag("assignedPersonIds", assignedPersonIDs.toArray(new UUID[0]));
+        return indent;
+    }
+
+    protected void writeToXMLEnd(final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "intelOutcome");
+    }
+
+    public void loadFieldsFromXmlNode(Campaign campaign, Version version, Node node) throws ParseException {
+        // Level is stored as an attribute of the node
+        try {
+            title = node.getAttributes().getNamedItem("title").getNodeValue();
+        } catch (Exception e) {
+            LOGGER.error("", e);
+        }
+
+        NodeList childNodes = node.getChildNodes();
+
+        for (int x = 0; x < childNodes.getLength(); x++) {
+            Node item = childNodes.item(x);
+            try {
+                if (item.getNodeName().equalsIgnoreCase("description")) {
+                    description = item.getTextContent();
+                } else if (item.getNodeName().equalsIgnoreCase("beneficiaryId")) {
+                    beneficiaryId = Integer.parseInt(item.getTextContent());
+                } else if (item.getNodeName().equalsIgnoreCase("testFunction")) {
+                    // CDATA entry should be the first child.
+                    Node firstChild = item.getFirstChild();
+                    if (firstChild.getNodeType() == Node.CDATA_SECTION_NODE) {
+                        testFunction =
+                              (ISerializableSupplier<Boolean>) MHQXMLUtility.parseSerialCDATA(firstChild.getNodeValue());
+                    }
+                } else if (item.getNodeName().equalsIgnoreCase("applyFunction")) {
+                    // CDATA entry should be the first child.
+                    Node firstChild = item.getFirstChild();
+                    if (firstChild.getNodeType() == Node.CDATA_SECTION_NODE) {
+                        applyFunction = (ISerializableRunnable) MHQXMLUtility.parseSerialCDATA(firstChild.getNodeValue());
+                    }
+                } else if (item.getNodeName().equalsIgnoreCase("linkedObjects")) {
+                    NodeList objectChildren = item.getChildNodes();
+                    for (int y = 0; y < objectChildren.getLength(); y++) {
+                        Node itemChild = objectChildren.item(y);
+                        if (itemChild.getNodeName().equalsIgnoreCase("person")) {
+                            Person person = Person.generateInstanceFromXML(itemChild, campaign, version);
+                            linkedObjects.add(person);
+                        } else if (itemChild.getNodeName().equalsIgnoreCase("entity")) {
+                            Entity entity = MHQXMLUtility.parseSingleEntityMul((Element) itemChild, campaign);
+                            linkedObjects.add(entity);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.error("", e);
+            }
+        }
     }
 }
 
