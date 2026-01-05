@@ -5,7 +5,6 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.espionage.inteltypes.BasicIntel;
 import mekhq.campaign.espionage.inteltypes.CounterIntel;
 import mekhq.campaign.espionage.inteltypes.FinancialIntel;
-import mekhq.campaign.espionage.inteltypes.ForcesIntel;
 import mekhq.campaign.personnel.Person;
 import mekhq.utilities.MHQXMLUtility;
 import org.junit.jupiter.api.Test;
@@ -25,7 +24,6 @@ import java.util.UUID;
 import static mekhq.campaign.espionage.IntelRating.FINANCIAL_NAME;
 import static mekhq.campaign.espionage.IntelRating.intelAdjacencyMap;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 class IntelRatingTest {
 
@@ -257,5 +255,6 @@ class IntelRatingTest {
         assertEquals(level, deserialized.getLocalIntel().getLevel());
         assertEquals(level + 4, deserialized.getFinancialIntel().getLevel());
         assertEquals(UUID.fromString(uuidString), deserialized.getAssignedPersonIDs().get(0));
+        assertEquals(entityId, deserialized.getForcesIntel().getKnownEntitiesList().get(0).getValue());
     }
 }
