@@ -36,8 +36,7 @@ package mekhq.campaign.espionage.inteltypes;
 import megamek.Version;
 import megamek.logging.MMLogger;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.mission.AtBContract;
-import mekhq.utilities.MHQXMLUtility;
+import org.apache.commons.lang3.NotImplementedException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -148,13 +147,11 @@ public abstract class BasicIntel {
     }
 
     protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
-        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "intel", "level", level, "type", getClass());
-        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "locked", locked);
-        return indent;
+        throw new NotImplementedException();
     }
 
     protected void writeToXMLEnd(final PrintWriter pw, int indent) {
-        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "intel");
+        throw new NotImplementedException();
     }
 
     public void loadFieldsFromXmlNode(Campaign campaign, Version version, Node node) throws ParseException {

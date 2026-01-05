@@ -1,13 +1,31 @@
 package mekhq.campaign.espionage;
 
+import megamek.Version;
+import mekhq.campaign.Campaign;
 import mekhq.campaign.espionage.inteltypes.BasicIntel;
 import mekhq.campaign.espionage.inteltypes.CounterIntel;
 import mekhq.campaign.espionage.inteltypes.FinancialIntel;
+import mekhq.campaign.espionage.inteltypes.ForcesIntel;
+import mekhq.campaign.personnel.Person;
+import mekhq.utilities.MHQXMLUtility;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.UUID;
 
 import static mekhq.campaign.espionage.IntelRating.FINANCIAL_NAME;
 import static mekhq.campaign.espionage.IntelRating.intelAdjacencyMap;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 class IntelRatingTest {
 
@@ -173,5 +191,71 @@ class IntelRatingTest {
             BasicIntel adjacent = rating.getAnIntel(adjName);
             assertEquals((int) Math.floor(4/2.0) + (int) Math.floor(7/2.0), adjacent.getLevel());
         }
+    }
+
+
+    @Test
+    void testSerializeToXML() throws IOException {
+        Campaign mockCampaign = Mockito.mock(Campaign.class);
+        IntelRating rating = new IntelRating(4);
+        Person person = new Person("Bogdan", "Bogdanovich", mockCampaign, "PIR");
+        person.setId(UUID.fromString("13bcf124-9468-4c40-9f2a-922b776ba7bb"));
+        rating.addPerson(person);
+        try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
+            rating.writeToXML(mockCampaign, pw, 0);
+
+            assertEquals("<intelRating type=\"mekhq.campaign.espionage.IntelRating\">\t<forcesIntel level=\"4\" " +
+                               "type=\"mekhq.campaign.espionage.inteltypes.ForcesIntel\">\t\t<locked>false</locked>\t\t" +
+                               "<knownEntities>\t\t</knownEntities>\t</forcesIntel>\t<positionIntel level=\"4\" type=" +
+                               "\"mekhq.campaign.espionage.inteltypes.PositionIntel\">\t\t<locked>false</locked>\t" +
+                               "</positionIntel>\t<logisticsIntel level=\"4\" type=\"mekhq.campaign.espionage.inteltypes" +
+                               ".LogisticsIntel\">\t\t<locked>false</locked>\t</logisticsIntel>\t<personnelIntel " +
+                               "level=\"4\" type=\"mekhq.campaign.espionage.inteltypes.PersonnelIntel\">\t\t<locked>false" +
+                               "</locked>\t</personnelIntel>\t<commsIntel level=\"4\" type=\"mekhq.campaign.espionage" +
+                               ".inteltypes.CommsIntel\">\t\t<locked>false</locked>\t</commsIntel>\t<financialIntel level" +
+                               "=\"4\" type=\"mekhq.campaign.espionage.inteltypes.FinancialIntel\">\t\t<locked>false" +
+                               "</locked>\t</financialIntel>\t<localIntel level=\"4\" type=\"mekhq.campaign.espionage" +
+                               ".inteltypes.LocalIntel\">\t\t<locked>false</locked>\t</localIntel>\t<counterIntel level" +
+                               "=\"4\" type=\"mekhq.campaign.espionage.inteltypes.CounterIntel\">\t\t<locked>false" +
+                               "</locked>\t</counterIntel>\t<assignedPersonIds>13bcf124-9468-4c40-9f2a-922b776ba7bb" +
+                               "</assignedPersonIds></intelRating>",
+                  sw.toString().replaceAll("\\n|\\r\\n", ""));
+        }
+    }
+
+    @Test
+    void testDeserializeFromXML() throws IOException, ParserConfigurationException, SAXException {
+        Campaign mockCampaign = Mockito.mock(Campaign.class);
+        int level = 6;
+        String entityDesc = "Mek A";
+        int entityId = 13;
+        String uuidString = "13bcf124-9468-4c40-9f2a-922b776ba7bb";
+        Person person = new Person("Bogdan", "Bogdanovich", mockCampaign, "PIR");
+        person.setId(UUID.fromString(uuidString));
+
+        IntelRating rating = new IntelRating(level);
+        rating.addPerson(person);
+        rating.getForcesIntel().addKnownEntity(entityDesc, entityId);
+        rating.getPositionIntel().addKnown(entityId);
+        rating.improveAnIntel(IntelRating.FINANCIAL_NAME, 4);
+
+        String xmlBlock;
+
+        try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
+            rating.writeToXML(mockCampaign, pw, 0);
+            xmlBlock = sw.toString();
+        }
+
+        // Using factory get an instance of document builder
+        DocumentBuilder db = MHQXMLUtility.newSafeDocumentBuilder();
+
+        // Parse using builder to get DOM representation of the XML file
+        Document xmlDoc = db.parse(new ByteArrayInputStream(xmlBlock.getBytes()));
+        Element node = xmlDoc.getDocumentElement();
+        IntelRating deserialized = IntelRating.generateInstanceFromXML( node, mockCampaign,new Version());
+
+        assertEquals(level, deserialized.getLocalIntel().getLevel());
+        assertEquals(level + 4, deserialized.getFinancialIntel().getLevel());
+        assertEquals(UUID.fromString(uuidString), deserialized.getAssignedPersonIDs().get(0));
     }
 }

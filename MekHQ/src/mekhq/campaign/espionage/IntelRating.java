@@ -49,7 +49,6 @@ import mekhq.campaign.espionage.inteltypes.PersonnelIntel;
 import mekhq.campaign.espionage.inteltypes.PositionIntel;
 import mekhq.campaign.personnel.Person;
 import mekhq.utilities.MHQXMLUtility;
-import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -392,60 +391,65 @@ public class IntelRating {
         financialIntel.writeToXML(campaign, pw, indent);
         localIntel.writeToXML(campaign, pw, indent);
         counterIntel.writeToXML(campaign, pw, indent);
-        MHQXMLUtility.writeSimpleXMLTag("assignedPersonIds", assignedPersonIDs.toArray(new UUID[0]));
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "assignedPersonIds", assignedPersonIDs.toArray(new UUID[0]));
         return indent;
     }
 
     protected void writeToXMLEnd(final PrintWriter pw, int indent) {
-        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "intelOutcome");
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "intelRating");
     }
 
     public void loadFieldsFromXmlNode(Campaign campaign, Version version, Node node) throws ParseException {
-        // Level is stored as an attribute of the node
-        try {
-            title = node.getAttributes().getNamedItem("title").getNodeValue();
-        } catch (Exception e) {
-            LOGGER.error("", e);
-        }
-
         NodeList childNodes = node.getChildNodes();
 
         for (int x = 0; x < childNodes.getLength(); x++) {
             Node item = childNodes.item(x);
             try {
-                if (item.getNodeName().equalsIgnoreCase("description")) {
-                    description = item.getTextContent();
-                } else if (item.getNodeName().equalsIgnoreCase("beneficiaryId")) {
-                    beneficiaryId = Integer.parseInt(item.getTextContent());
-                } else if (item.getNodeName().equalsIgnoreCase("testFunction")) {
-                    // CDATA entry should be the first child.
-                    Node firstChild = item.getFirstChild();
-                    if (firstChild.getNodeType() == Node.CDATA_SECTION_NODE) {
-                        testFunction =
-                              (ISerializableSupplier<Boolean>) MHQXMLUtility.parseSerialCDATA(firstChild.getNodeValue());
-                    }
-                } else if (item.getNodeName().equalsIgnoreCase("applyFunction")) {
-                    // CDATA entry should be the first child.
-                    Node firstChild = item.getFirstChild();
-                    if (firstChild.getNodeType() == Node.CDATA_SECTION_NODE) {
-                        applyFunction = (ISerializableRunnable) MHQXMLUtility.parseSerialCDATA(firstChild.getNodeValue());
-                    }
-                } else if (item.getNodeName().equalsIgnoreCase("linkedObjects")) {
-                    NodeList objectChildren = item.getChildNodes();
-                    for (int y = 0; y < objectChildren.getLength(); y++) {
-                        Node itemChild = objectChildren.item(y);
-                        if (itemChild.getNodeName().equalsIgnoreCase("person")) {
-                            Person person = Person.generateInstanceFromXML(itemChild, campaign, version);
-                            linkedObjects.add(person);
-                        } else if (itemChild.getNodeName().equalsIgnoreCase("entity")) {
-                            Entity entity = MHQXMLUtility.parseSingleEntityMul((Element) itemChild, campaign);
-                            linkedObjects.add(entity);
-                        }
-                    }
+                if (item.getNodeName().equalsIgnoreCase("forcesIntel")) {
+                    ForcesIntel newForcesIntel = new ForcesIntel();
+                    newForcesIntel.loadFieldsFromXmlNode(campaign, version, item);
+                    forcesIntel = newForcesIntel;
+                } else if (item.getNodeName().equalsIgnoreCase("positionIntel")) {
+                    PositionIntel newPositionIntel = new PositionIntel();
+                    newPositionIntel.loadFieldsFromXmlNode(campaign, version, item);
+                    positionIntel = newPositionIntel;
+                } else if (item.getNodeName().equalsIgnoreCase("logisticsIntel")) {
+                    LogisticsIntel newLogisticsIntel = new LogisticsIntel();
+                    newLogisticsIntel.loadFieldsFromXmlNode(campaign, version, item);
+                    logisticsIntel = newLogisticsIntel;
+                } else if (item.getNodeName().equalsIgnoreCase("personnelIntel")) {
+                    PersonnelIntel newPersonnelIntel = new PersonnelIntel();
+                    newPersonnelIntel.loadFieldsFromXmlNode(campaign, version, item);
+                    personnelIntel = newPersonnelIntel;
+                } else if (item.getNodeName().equalsIgnoreCase("commsIntel")) {
+                    CommsIntel newCommsIntel = new CommsIntel();
+                    newCommsIntel.loadFieldsFromXmlNode(campaign, version, item);
+                    commsIntel = newCommsIntel;
+                } else if (item.getNodeName().equalsIgnoreCase("financialIntel")) {
+                    FinancialIntel newFinancialIntel = new FinancialIntel();
+                    newFinancialIntel.loadFieldsFromXmlNode(campaign, version, item);
+                    financialIntel = newFinancialIntel;
+                } else if (item.getNodeName().equalsIgnoreCase("localIntel")) {
+                    LocalIntel newLocalIntel = new LocalIntel();
+                    newLocalIntel.loadFieldsFromXmlNode(campaign, version, item);
+                    localIntel = newLocalIntel;
+                } else if (item.getNodeName().equalsIgnoreCase("counterIntel")) {
+                    CounterIntel newCounterIntel = new CounterIntel();
+                    newCounterIntel.loadFieldsFromXmlNode(campaign, version, item);
+                    counterIntel = newCounterIntel;
+                } else if (item.getNodeName().equalsIgnoreCase("assignedPersonIDs")) {
+                    MHQXMLUtility.parseUUIDCollection(item.getTextContent(), assignedPersonIDs);
                 }
             } catch (Exception e) {
                 LOGGER.error("", e);
             }
+        }
+        try {
+            // Attempt to load the backing Person instances for all loaded UUIDs from the campaign's
+            // personnel map.
+            updateAssignedPersons(campaign.getPersonnelMap());
+        } catch (Exception e) {
+            LOGGER.error("", e);
         }
     }
 }

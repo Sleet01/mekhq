@@ -153,7 +153,8 @@ public class ForcesIntel extends BasicIntel {
     }
 
     protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
-        indent = super.writeToXMLBegin(campaign, pw, indent);
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "forcesIntel", "level", getLevel(), "type", getClass());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "locked", locked);
         MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "knownEntities");
         // Write list of known entities with description and ID (may be default)
         for (SimpleEntry<String, Integer> entry : knownEntities) {
@@ -164,6 +165,9 @@ public class ForcesIntel extends BasicIntel {
         return indent;
     }
 
+    protected void writeToXMLEnd(final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "forcesIntel");
+    }
 
     public void loadFieldsFromXmlNode(Campaign campaign, Version version, Node node) throws ParseException {
         super.loadFieldsFromXmlNode(campaign, version, node);
