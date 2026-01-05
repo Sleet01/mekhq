@@ -93,12 +93,16 @@ public class PositionIntel extends BasicIntel {
     }
 
     protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
-        indent = super.writeToXMLBegin(campaign, pw, indent);
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "positionIntel", "level", getLevel(), "type", getClass());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "locked", locked);
         // Write list of known positions
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "knownPositions", knownPositions);
         return indent;
     }
 
+    protected void writeToXMLEnd(final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "positionIntel");
+    }
 
     public void loadFieldsFromXmlNode(Campaign campaign, Version version, Node node) throws ParseException {
         super.loadFieldsFromXmlNode(campaign, version, node);
@@ -122,5 +126,4 @@ public class PositionIntel extends BasicIntel {
             }
         }
     }
-
 }

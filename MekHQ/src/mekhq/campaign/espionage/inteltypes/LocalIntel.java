@@ -35,7 +35,10 @@ package mekhq.campaign.espionage.inteltypes;
 
 import megamek.Version;
 import mekhq.campaign.Campaign;
+import mekhq.utilities.MHQXMLUtility;
 import org.w3c.dom.Node;
+
+import java.io.PrintWriter;
 
 public class LocalIntel extends BasicIntel {
 
@@ -49,6 +52,16 @@ public class LocalIntel extends BasicIntel {
 
     public LocalIntel(LocalIntel other) {
         super(other);
+    }
+
+    protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "localIntel", "level", getLevel(), "type", getClass());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "locked", locked);
+        return indent;
+    }
+
+    protected void writeToXMLEnd(final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "localIntel");
     }
 
     public static LocalIntel generateInstanceFromXML(Node node, Campaign campaign, Version version) {

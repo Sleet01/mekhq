@@ -35,7 +35,10 @@ package mekhq.campaign.espionage.inteltypes;
 
 import megamek.Version;
 import mekhq.campaign.Campaign;
+import mekhq.utilities.MHQXMLUtility;
 import org.w3c.dom.Node;
+
+import java.io.PrintWriter;
 
 public class PersonnelIntel extends BasicIntel {
 
@@ -49,6 +52,16 @@ public class PersonnelIntel extends BasicIntel {
 
     public PersonnelIntel(PersonnelIntel other) {
         super(other);
+    }
+
+    protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "personnelIntel", "level", getLevel(), "type", getClass());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "locked", locked);
+        return indent;
+    }
+
+    protected void writeToXMLEnd(final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "personnelIntel");
     }
 
     public static PersonnelIntel generateInstanceFromXML(Node node, Campaign campaign, Version version) {
