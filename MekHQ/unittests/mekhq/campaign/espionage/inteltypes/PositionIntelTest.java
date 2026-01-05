@@ -28,8 +28,8 @@ class PositionIntelTest {
         try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
             positionIntel.writeToXML(mockCampaign, pw, 0);
 
-            assertEquals("<intel level=\"12\" type=\"mekhq.campaign.espionage.inteltypes.PositionIntel\">\t" +
-                               "<locked>false</locked>\t<knownPositions>1</knownPositions></intel>",
+            assertEquals("<positionIntel level=\"12\" type=\"mekhq.campaign.espionage.inteltypes.PositionIntel\">\t" +
+                               "<locked>false</locked>\t<knownPositions>1</knownPositions></positionIntel>",
                   sw.toString().replaceAll("\\n|\\r\\n", ""));
         }
     }

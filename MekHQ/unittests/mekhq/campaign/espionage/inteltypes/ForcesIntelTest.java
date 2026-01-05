@@ -160,8 +160,8 @@ class ForcesIntelTest {
         try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
             forcesIntel.writeToXML(mockCampaign, pw, 0);
 
-            assertEquals("<intel level=\"10\" type=\"mekhq.campaign.espionage.inteltypes.ForcesIntel\">" +
-                               "\t<locked>false</locked>\t<knownEntities>\t</knownEntities></intel>",
+            assertEquals("<forcesIntel level=\"10\" type=\"mekhq.campaign.espionage.inteltypes.ForcesIntel\">" +
+                               "\t<locked>false</locked>\t<knownEntities>\t</knownEntities></forcesIntel>",
                   sw.toString().replaceAll("\\n|\\r\\n", ""));
         }
     }

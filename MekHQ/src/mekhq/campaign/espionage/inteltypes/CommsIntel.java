@@ -35,8 +35,10 @@ package mekhq.campaign.espionage.inteltypes;
 
 import megamek.Version;
 import mekhq.campaign.Campaign;
+import mekhq.utilities.MHQXMLUtility;
 import org.w3c.dom.Node;
 
+import java.io.PrintWriter;
 import java.text.ParseException;
 
 public class CommsIntel extends BasicIntel {
@@ -51,6 +53,16 @@ public class CommsIntel extends BasicIntel {
 
     public CommsIntel(CommsIntel commsIntel) {
         super(commsIntel);
+    }
+
+    protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "commsIntel", "level", getLevel(), "type", getClass());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "locked", locked);
+        return indent;
+    }
+
+    protected void writeToXMLEnd(final PrintWriter pw, int indent) {
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "commsIntel");
     }
 
     public static CommsIntel generateInstanceFromXML(Node node, Campaign campaign, Version version) {
