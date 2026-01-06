@@ -255,7 +255,7 @@ public class IntelItem implements Serializable {
     }
 
     protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
-        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "intelitem", "itemId", itemId, "type", getClass());
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "intelItem", "itemId", itemId, "type", getClass());
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "ownerId", ownerId);
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "possessorId", possessorId);
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "startDate", startDate.toString());
@@ -267,6 +267,7 @@ public class IntelItem implements Serializable {
         for (IntelOutcome outcome : outcomes) {
             outcome.writeToXML(campaign, pw, indent);
         }
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "outcomes");
         return indent;
     }
 
