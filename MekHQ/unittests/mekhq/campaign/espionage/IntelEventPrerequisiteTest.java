@@ -118,7 +118,7 @@ class IntelEventPrerequisiteTest {
         IntelEventPrerequisite deserialized = IntelEventPrerequisite.generateInstanceFromXML( node, mockCampaign,new Version());
 
         // Assert string _contents_ are equal.
-        assertTrue( prerequisite.getRequirement().equals(deserialized.getRequirement()));
+        assertTrue(prerequisite.getRequirement().equals(deserialized.getRequirement()));
         assertTrue(deserialized.get());
         // Functions perform the same, but are fundamentally _different objects_
         assertNotEquals(testFunction, deserialized.getSupplier());

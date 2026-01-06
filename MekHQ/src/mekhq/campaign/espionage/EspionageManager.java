@@ -55,10 +55,10 @@ public class EspionageManager {
         this.spheres = spheres;
     }
 
-    // If using this (likely from a Runnable or Supplier) the instance must exist, and the campaign
-    // must have been set; otherwise will return null!
     public static @Nullable EspionageManager getInstance() {
-
+        if (instance == null) {
+            instance = new EspionageManager(null, EspionageFactory.getInstance(), new ArrayList<>());
+        }
         return instance;
     }
 
