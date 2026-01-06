@@ -270,7 +270,10 @@ class IntelOutcomeTest {
         SphereOfInfluence soi = new SphereOfInfluence();
         soi.setSoiId(1);
 
-        EspionageManager espionageManager = EspionageManager.getInstance(mockCampaign);
+        // For tests, we need to assume the EspionageManager is dirty and needs clearing before using.
+        EspionageManager espionageManager = EspionageManager.getInstance();
+        espionageManager.setCampaign(mockCampaign);
+        espionageManager.getSpheres().clear();
         espionageManager.addSphereOfInfluence(soi);
 
         String name = "Incriminating Photos";
