@@ -2,7 +2,6 @@ package mekhq.campaign.espionage;
 
 import megamek.Version;
 import mekhq.campaign.Campaign;
-import mekhq.campaign.personnel.Person;
 import mekhq.utilities.MHQXMLUtility;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -16,7 +15,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -96,7 +94,7 @@ class IntelEventPrerequisiteTest {
         String targetPersonName = "Jane Weld";
 
         // Mock confirming that a specific person was deployed to a specific mission.
-        // This will serialize because a String is a base object type.
+        // This will serialize cleanly because Strings are a base object type, so references act as statics.
         ISerializableSupplier<Boolean> testFunction = () -> {
             return (mockCallChain.contains(targetPersonName));
         };
