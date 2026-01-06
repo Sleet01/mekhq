@@ -80,7 +80,8 @@ class IntelEventTest {
 
         // Configure EspionageManager,
         int soiId = 1;
-        EspionageManager manager = EspionageManager.getInstance(campaign);
+        EspionageManager manager = EspionageManager.getInstance();
+        manager.setCampaign(campaign);
         SphereOfInfluence sphereOfInfluence = new SphereOfInfluence(soiId, 1, "Test SOI", "Test Sphere Of Influence",
               new HashMap<>(), new ArrayList<>(), new HashMap<>());
 
