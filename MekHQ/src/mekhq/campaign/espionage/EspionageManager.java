@@ -34,7 +34,9 @@
 package mekhq.campaign.espionage;
 
 import megamek.common.annotations.Nullable;
+import mekhq.campaign.Campaign;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class EspionageManager {
@@ -42,19 +44,32 @@ public class EspionageManager {
     private static EspionageManager instance;
 
     // Instance members
-    private EspionageFactory espionageFactory;
+    private transient Campaign campaign;
+    private transient EspionageFactory espionageFactory;
     private ArrayList<SphereOfInfluence> spheres;
 
-    private EspionageManager(EspionageFactory espionageFactory, ArrayList<SphereOfInfluence> spheres) {
+    private EspionageManager(Campaign campaign, EspionageFactory espionageFactory,
+          ArrayList<SphereOfInfluence> spheres) {
+        this.campaign = campaign;
         this.espionageFactory = espionageFactory;
         this.spheres = spheres;
     }
 
-    public static EspionageManager getInstance() {
-        if(instance == null) {
-            instance = new EspionageManager(EspionageFactory.getInstance(), new ArrayList<>());
-        }
+    // If using this (likely from a Runnable or Supplier) the instance must exist, and the campaign
+    // must have been set; otherwise will return null!
+    public static @Nullable EspionageManager getInstance() {
+
         return instance;
+    }
+
+    public static @Nullable EspionageManager getInstance(Campaign campaign) {
+        if (instance == null) {
+            instance = new EspionageManager(campaign, EspionageFactory.getInstance(), new ArrayList<>());
+            return instance;
+        } else if (instance.campaign == campaign) {
+            return instance;
+        }
+        return null;
     }
 
     public void addSphereOfInfluence(SphereOfInfluence sphereOfInfluence) {
@@ -70,6 +85,26 @@ public class EspionageManager {
         return null;
     }
 
+    public void setCampaign(Campaign campaign) {
+        this.campaign = campaign;
+    }
+
+    public void setEspionageFactory(EspionageFactory espionageFactory) {
+        this.espionageFactory = espionageFactory;
+    }
+
+    public ArrayList<SphereOfInfluence> getSpheres() {
+        return spheres;
+    }
+
+    public Campaign getCampaign() {
+        return campaign;
+    }
+
+    public EspionageFactory getEspionageFactory() {
+        return espionageFactory;
+    }
+
     /**
      * Run all updates for all Spheres of Influence currently being managed.
      * This includes:
@@ -80,27 +115,13 @@ public class EspionageManager {
      * This may take some time.
      * @return reports String
      */
-    public String runUpdates() {
+    public String runUpdates(LocalDate date) {
         StringBuilder builder = new StringBuilder();
         builder.append("======== Espionage Update Report ========").append("\n\n");
 
         for (SphereOfInfluence sphereOfInfluence : spheres) {
-            builder.append(updateSphereOfInfluence(sphereOfInfluence)).append("\n");
+            builder.append(sphereOfInfluence.update(date)).append("\n");
         }
-
-        return builder.toString();
-    }
-
-    /**
-     * Update one SphereOfInfluence instance and return its reports, if any.
-     * @param sphere
-     * @return
-     */
-    private String updateSphereOfInfluence(SphereOfInfluence sphere) {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append(sphere.updateIntelItems()).append("\n");
-        builder.append(sphere.updateEvents()).append("\n");
 
         return builder.toString();
     }

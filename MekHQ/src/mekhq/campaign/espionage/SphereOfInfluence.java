@@ -40,6 +40,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.espionage.IntelEvent.EventState;
 import mekhq.campaign.mission.Mission;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -78,8 +79,9 @@ public class SphereOfInfluence {
         this.title = title;
         this.description = description;
         this.missionId = missionId;
-        this.items = items;
         this.actorsRatingsMap = actorsRatingsMap;
+        this.items = items;
+        this.eventsMap = eventsMap;
     }
 
     public int getSoiId() {
@@ -150,6 +152,20 @@ public class SphereOfInfluence {
     public ArrayList<IntelItem> getItems() {
         return items;
     }
+
+    // May need refactoring.  Could just be an ID -> event hashmap since every participant in an event should be
+    // listed.
+    public @Nullable IntelEvent findIntelEvent(int participant, int id) {
+        if (eventsMap != null && eventsMap.containsKey(participant)) {
+            for (IntelEvent event : eventsMap.get(participant)) {
+                if (event.getEventId() == id) {
+                    return event;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Call once after instantiating.
      * Create entries for every entity involved in this Mission:
@@ -218,11 +234,19 @@ public class SphereOfInfluence {
         actorsRatingsMap.put(actorId, actorRatingMap);
     }
 
+    public String update(LocalDate date) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(updateIntelItems(date)).append(System.lineSeparator());
+        builder.append(updateEvents(date)).append(System.lineSeparator());
+
+        return builder.toString();
+    }
+
     /**
      * Iterate over all the IntelItems in this SOI and apply any outcomes that have
      * @return report String
      */
-    public String updateIntelItems() {
+    public String updateIntelItems(LocalDate date) {
         StringBuilder builder = new StringBuilder();
 
         // Check all outcomes for each IntelItem and execute.
@@ -249,14 +273,23 @@ public class SphereOfInfluence {
      * Remove completed events and timed-out events.
      * @return report String
      */
-    public String updateEvents() {
+    public String updateEvents(LocalDate date) {
         StringBuilder builder = new StringBuilder();
 
+        // Apply updates now
+        for (int id : eventsMap.keySet()) {
+            ArrayList<IntelEvent> events = eventsMap.get(id);
+            for (IntelEvent event : events) {
+                builder.append(event.update(date)).append(System.lineSeparator());
+            }
+        }
+
+        // Then clean up any events that have expired/been completed.
         for (int id : eventsMap.keySet()) {
             ArrayList<IntelEvent> events = eventsMap.get(id);
             ArrayList<IntelEvent> doneEvents = new ArrayList<>();
 
-            // Find all EXPIRED events and clean them up.
+            // Find all EXPIRED (or greater) events and clean them up.
             for (IntelEvent event : events) {
                 if (event.getState().ordinal() >= EventState.EXPIRED.ordinal()) {
                     doneEvents.add(event);
