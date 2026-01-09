@@ -29,7 +29,8 @@ class PositionIntelTest {
             positionIntel.writeToXML(mockCampaign, pw, 0);
 
             assertEquals("<positionIntel level=\"12\" type=\"mekhq.campaign.espionage.inteltypes.PositionIntel\">\t" +
-                               "<locked>false</locked>\t<knownPositions>1</knownPositions></positionIntel>",
+                               "<mod>0</mod>\t<locked>false</locked>\t<knownPositions>1</knownPositions" +
+                               "></positionIntel>",
                   sw.toString().replaceAll("\\n|\\r\\n", ""));
         }
     }
