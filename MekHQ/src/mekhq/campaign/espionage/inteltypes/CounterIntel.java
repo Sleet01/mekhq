@@ -55,7 +55,8 @@ public class CounterIntel extends BasicIntel {
     }
 
     protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
-        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "counterIntel", "level", getLevel(), "type", getClass());
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "counterIntel", "level", level, "type", getClass());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "mod", mod);
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "locked", locked);
         return indent;
     }

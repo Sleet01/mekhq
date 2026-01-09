@@ -93,7 +93,8 @@ public class PositionIntel extends BasicIntel {
     }
 
     protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
-        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "positionIntel", "level", getLevel(), "type", getClass());
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "positionIntel", "level", level, "type", getClass());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "mod", mod);
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "locked", locked);
         // Write list of known positions
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "knownPositions", knownPositions);

@@ -35,7 +35,6 @@ package mekhq.campaign.espionage;
 
 import megamek.Version;
 import megamek.common.annotations.Nullable;
-import megamek.common.units.Entity;
 import megamek.logging.MMLogger;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.espionage.inteltypes.BasicIntel;

@@ -153,7 +153,8 @@ public class ForcesIntel extends BasicIntel {
     }
 
     protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
-        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "forcesIntel", "level", getLevel(), "type", getClass());
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "forcesIntel", "level", level, "type", getClass());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "mod", mod);
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "locked", locked);
         MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "knownEntities");
         // Write list of known entities with description and ID (may be default)
