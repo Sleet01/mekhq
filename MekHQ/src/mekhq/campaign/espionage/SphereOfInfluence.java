@@ -50,7 +50,7 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Set;
 
 public class SphereOfInfluence {
     private static final MMLogger LOGGER = MMLogger.create(SphereOfInfluence.class);
@@ -124,6 +124,10 @@ public class SphereOfInfluence {
         this.description = description;
     }
 
+    public Set<Integer> getActors() {
+        return actorsRatingsMap.keySet();
+    }
+
     public HashMap<Integer, HashMap<Integer, IntelRating>> getActorsRatingsMap() {
         return actorsRatingsMap;
     }
@@ -132,12 +136,58 @@ public class SphereOfInfluence {
         this.actorsRatingsMap = actorsRatingsMap;
     }
 
+    public @Nullable IntelRating getActorRatingForFoe(int actorId, int foeId) {
+        if (actorsRatingsMap.containsKey(actorId)) {
+            return actorsRatingsMap.get(actorId).get(foeId);
+        }
+        return null;
+    }
+
+    public void addActorRatingForFoe(int actorId, int foeId) {
+        setActorRatingForFoe(actorId, foeId, new IntelRating());
+    }
+
+    public void addActorRatingForFoe(int actorId, int foeId, int rating ) {
+        setActorRatingForFoe(actorId, foeId, new IntelRating(rating));
+    }
+
+    /**
+     * Directly update the IntelRating for a specific Actor:Foe pairing with a new IntelRating.
+     * Note: destructive.
+     *
+     * @param actorId       The actor executing on this IntelRating
+     * @param foeId         The target of the IntelRating
+     * @param ratingForFoe  Initialized IntelRating with all its scores
+     */
+    public void setActorRatingForFoe(int actorId, int foeId, IntelRating ratingForFoe) {
+        HashMap<Integer, IntelRating> actorRatingMap = (actorsRatingsMap.containsKey(actorId))
+                                                             ? actorsRatingsMap.get(actorId) : new HashMap<>();
+
+        actorRatingMap.put(foeId, ratingForFoe);
+        actorsRatingsMap.put(actorId, actorRatingMap);
+    }
+
     public HashMap<Integer, ArrayList<IntelEvent>> getEventsMap() {
         return eventsMap;
     }
 
     public void setEventsMap(HashMap<Integer, ArrayList<IntelEvent>> eventsMap) {
         this.eventsMap = eventsMap;
+    }
+
+    public void setEventsListForActor(int id, ArrayList<IntelEvent> eventsList) {
+        eventsMap.put(id, eventsList);
+    }
+
+    public void addEventForActor(int id, IntelEvent event) {
+        if (!eventsMap.containsKey(id)) {
+            eventsMap.put(id, new ArrayList<>());
+        }
+        eventsMap.get(id).add(event);
+    }
+
+    public @Nullable ArrayList<IntelEvent> getEventsListForActor(int id) {
+        return eventsMap.get(id);
     }
 
     public void addIntelItem(IntelItem item) {
@@ -183,15 +233,17 @@ public class SphereOfInfluence {
      * Eventually these will be more detailed, and also include:
      * 3. Opponent faction (may provide bonuses)
      * 4. Player employer
+     * 5. ???
      *
      * Initially we will only provide events for Player vs Opponent force, although
      * some may be written as, "prevent Opponent from X" as if the opfor is also generating events.
-     * @param campaign  The current campaign; this may be replaced in the near future.
+     * @param campaign  The current campaign; this may be refactored in the near future.
      * @param mission   Let the GUI decide which Mission to look at
-     * @param botLevel  For this round, set a static level for the bot
+     * @param botLevel  For the time being, set a static level for the bot
      */
     public void populate(Campaign campaign, Mission mission, int botLevel) {
-        if (missionId == UNASSIGNED_MISSION || campaign == null) {
+        // Do nothing if the campaign and/or mission is not set
+        if (campaign == null || mission == null) {
             return;
         }
         Player player = campaign.getPlayer();
@@ -217,29 +269,6 @@ public class SphereOfInfluence {
         // Keys are _opponent_ IDs here.
         setActorRatingForFoe(playerId, botId, playerOnOpFor);
         setActorRatingForFoe(botId, playerId, opForOnPlayer);
-    }
-
-    public @Nullable IntelRating getActorRatingForFoe(int actorId, int foeId) {
-        if (actorsRatingsMap.containsKey(actorId)) {
-            return actorsRatingsMap.get(actorId).get(foeId);
-        }
-        return null;
-    }
-
-    public void addActorRatingForFoe(int actorId, int foeId) {
-        setActorRatingForFoe(actorId, foeId, new IntelRating());
-    }
-
-    public void addActorRatingForFoe(int actorId, int foeId, int rating ) {
-        setActorRatingForFoe(actorId, foeId, new IntelRating(rating));
-    }
-
-    public void setActorRatingForFoe(int actorId, int foeId, IntelRating ratingForFoe) {
-        HashMap<Integer, IntelRating> actorRatingMap = (actorsRatingsMap.containsKey(actorId))
-                                            ? actorsRatingsMap.get(actorId) : new HashMap<>();
-
-        actorRatingMap.put(foeId, ratingForFoe);
-        actorsRatingsMap.put(actorId, actorRatingMap);
     }
 
     public String update(LocalDate date) {
@@ -351,24 +380,36 @@ public class SphereOfInfluence {
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "title", title);
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "description", description);
 
+        // actorsRatingsMap map of maps
         MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "actorsRatings");
-        for (IntelEventPrerequisite prerequisite : prerequisites) {
-            prerequisite.writeToXML(campaign, pw, indent);
+        for (int actor : actorsRatingsMap.keySet()) {
+            MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "actor", "id", actor);
+            for (int foe : actorsRatingsMap.get(actor).keySet()) {
+                MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "foe", "id", foe);
+                actorsRatingsMap.get(actor).get(foe).writeToXML(campaign, pw, indent);
+                MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "foe");
+            }
+            MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "actor");
         }
-        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "intelEventPrerequisites");
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "actorsRatings");
 
-        // ISerializableSupplier and ISerializableRunner get passed to the CDATA writer to become base64 encoded
-        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "testFunctions", "count", testFunctions.size());
-        for (ISerializableSupplier<Boolean> testFunction : testFunctions) {
-            MHQXMLUtility.writeSerialCDATA(pw, indent, "testFunction", testFunction);
+        // eventsMap, per actor ID
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "eventsMap", "count", eventsMap.size());
+        for (int actor : eventsMap.keySet()) {
+            MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "actor", "id", actor);
+            for (IntelEvent event : eventsMap.get(actor)) {
+                event.writeToXML(campaign, pw, indent);
+            }
+            MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "actor");
         }
-        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "testFunctions");
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "eventsMap");
 
-        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "outcomes", "count", outcomes.size());
-        for (IntelOutcome outcome : outcomes) {
-            outcome.writeToXML(campaign, pw, indent);
+        // items
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "items", "count", items.size());
+        for (IntelItem item : items) {
+            item.writeToXML(campaign, pw, indent);
         }
-        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "outcomes");
+        MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "items");
         return indent;
     }
 
@@ -379,7 +420,7 @@ public class SphereOfInfluence {
     public void loadFieldsFromXmlNode(Campaign campaign, Version version, Node node) throws ParseException {
         // Level is stored as an attribute of the node
         try {
-            eventId = Integer.parseInt(node.getAttributes().getNamedItem("eventId").getNodeValue());
+            soiId = Integer.parseInt(node.getAttributes().getNamedItem("soiId").getNodeValue());
         } catch (Exception e) {
             LOGGER.error("", e);
         }
@@ -389,65 +430,96 @@ public class SphereOfInfluence {
         for (int x = 0; x < childNodes.getLength(); x++) {
             Node item = childNodes.item(x);
             try {
-                if (item.getNodeName().equalsIgnoreCase("eventState")) {
-                    state = EventState.valueOf(item.getTextContent());
+                if (item.getNodeName().equalsIgnoreCase("missionId")) {
+                    missionId = Integer.parseInt(item.getTextContent());
                 } else if (item.getNodeName().equalsIgnoreCase("title")) {
                     title = item.getTextContent();
                 } else if (item.getNodeName().equalsIgnoreCase("description")) {
                     description = item.getTextContent();
-                } else if (item.getNodeName().equalsIgnoreCase("location")) {
-                    locationParts =
-                          new ArrayList<String>(List.of(
-                                MHQXMLUtility.parseStringArray(item.getTextContent()))
-                          );
-                } else if (item.getNodeName().equalsIgnoreCase("startDate")) {
-                    startDate = LocalDate.parse(item.getTextContent());
-                } else if (item.getNodeName().equalsIgnoreCase("endDate")) {
-                    endDate = LocalDate.parse(item.getTextContent());
-                } else if (item.getNodeName().equalsIgnoreCase("participantIds")) {
-                    int[] idArray  = MHQXMLUtility.parseIntArray(item.getTextContent());
-                    participantIds = new ArrayList(List.of(idArray));
-                } else if (item.getNodeName().equalsIgnoreCase("itemIds")) {
-                    int[] idArray  = MHQXMLUtility.parseIntArray(item.getTextContent());
-                    itemIds = new ArrayList(List.of(idArray));
-                } else if (item.getNodeName().equalsIgnoreCase("intelEventPrerequisites")) {
-                    NodeList prerequisiteNodes = item.getChildNodes();
-                    for (int y = 0; y < prerequisiteNodes.getLength(); y++) {
-                        Node prereqNode = prerequisiteNodes.item(y);
-                        if (prereqNode.getNodeName().equalsIgnoreCase("intelEventPrerequisite")) {
-                            IntelEventPrerequisite prerequisite =
-                                  IntelEventPrerequisite.generateInstanceFromXML(prerequisiteNodes.item(y),
-                                        campaign,
-                                        version);
-                            prerequisites.add(prerequisite);
+                } else if (item.getNodeName().equalsIgnoreCase("actorsRatings")) {
+                    loadActorRatingsFromNode(campaign, version, item);
+                } else if (item.getNodeName().equalsIgnoreCase("eventsMap")) {
+                    NodeList eventsNodes = item.getChildNodes();
+                    for (int y = 0; y < eventsNodes.getLength(); y++) {
+                        Node eventsNode = eventsNodes.item(y);
+                        if (eventsNode.getNodeName().equalsIgnoreCase("actor")) {
+                            int actorId = Integer.parseInt(eventsNode.getAttributes()
+                                                         .getNamedItem("id")
+                                                         .getNodeValue());
+                            eventsMap.put(actorId, new ArrayList<>());
+                            NodeList innerNodes = eventsNode.getChildNodes();
+                            for (int z = 0; z < innerNodes.getLength(); z++) {
+                                Node innerNode = innerNodes.item(z);
+                                if (innerNode.getNodeName().equalsIgnoreCase("intelEvent")) {
+                                    IntelEvent event = IntelEvent.generateInstanceFromXML(innerNode, campaign, version);
+                                    eventsMap.get(actorId).add(event);
+                                }
+                            }
                         }
                     }
-                } else if (item.getNodeName().equalsIgnoreCase("testFunctions")) {
-                    NodeList testFunctionNodes = item.getChildNodes();
-                    for (int y = 0; y < testFunctionNodes.getLength(); y++) {
-                        Node testFuncNode = testFunctionNodes.item(y);
-                        if (testFuncNode.getNodeName().equalsIgnoreCase("testFunction")) {
-                            ISerializableSupplier<Boolean> function =
-                                  (ISerializableSupplier<Boolean>) MHQXMLUtility.parseSerialCDATA(
-                                        testFunctionNodes.item(y).getTextContent());
-                            testFunctions.add(function);
+                } else if (item.getNodeName().equalsIgnoreCase("items")) {
+                    NodeList itemsNodes = item.getChildNodes();
+                    for (int y = 0; y < itemsNodes.getLength(); y++) {
+                        Node itemNode = itemsNodes.item(y);
+                        if (itemNode.getNodeName().equalsIgnoreCase("intelItem")) {
+                            items.add(IntelItem.generateInstanceFromXML(itemNode, campaign, version));
                         }
                     }
-                } else if (item.getNodeName().equalsIgnoreCase("outcomes")) {
-                    NodeList outcomeNodes = item.getChildNodes();
-                    for (int y = 0; y < outcomeNodes.getLength(); y++) {
-                        Node outcomeNode = outcomeNodes.item(y);
-                        if (outcomeNode.getNodeName().equalsIgnoreCase("intelOutcome")) {
-                            IntelOutcome outcome = IntelOutcome.generateInstanceFromXML(outcomeNodes.item(y),
-                                  campaign,
-                                  version);
-                            outcomes.add(outcome);
-                        }
-                    }
+
                 }
             } catch (Exception e) {
                 LOGGER.error("", e);
             }
+        }
+    }
+
+    /**
+     * Encapsulate loading the Map-of-Maps-of-IntelRatings that represents everyone's views of
+     * everyone else.
+     *
+     * Expected format is:
+     * <actorsRatings>
+     *     <actor>
+     *         <foe>
+     *             <IntelRating in whatever format it uses><\IntelRating>
+     *         </foe>
+     *     </actor>
+     * </actorsRatings>
+     *
+     * @param campaign  Campaign to load into
+     * @param version   Version instance or null
+     * @param node      Node to read from
+     * @throws ParseException
+     */
+    private void loadActorRatingsFromNode(Campaign campaign, Version version, Node node) throws ParseException {
+        NodeList actorNodes = node.getChildNodes();
+        int actorId = 0;
+        int foeId = 0;
+
+        try {
+            for (int x = 0; x < actorNodes.getLength(); x++) {
+                Node actorNode = actorNodes.item(x);
+                if (actorNode.getNodeName().equalsIgnoreCase("actor")) {
+                    actorId = Integer.parseInt(actorNode.getAttributes().getNamedItem("id").getNodeValue());
+                    actorsRatingsMap.put(actorId, new HashMap<>());
+                    NodeList foeNodes = actorNode.getChildNodes();
+                    for (int y = 0; y < foeNodes.getLength(); y++) {
+                        Node foeNode = foeNodes.item(y);
+                        if (foeNode.getNodeName().equalsIgnoreCase("foe")) {
+                            foeId = Integer.parseInt(foeNode.getAttributes().getNamedItem("id").getNodeValue());
+                            for (int z = 0; z < foeNode.getChildNodes().getLength(); z++) {
+                                Node ratingNode = foeNode.getChildNodes().item(z);
+                                if (ratingNode.getNodeName().equalsIgnoreCase("intelRating")) {
+                                    IntelRating rating = IntelRating.generateInstanceFromXML(ratingNode, campaign, version);
+                                    actorsRatingsMap.get(actorId).put(foeId, rating);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("", e);
         }
     }
 }
