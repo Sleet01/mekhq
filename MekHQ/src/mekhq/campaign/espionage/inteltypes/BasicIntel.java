@@ -52,7 +52,8 @@ public abstract class BasicIntel {
     public final static int HIGHEST_LEVEL = 12;
     public final static int LOWEST_LEVEL = -12;
 
-    private int level = 0;
+    protected int level = 0;
+    protected int mod = 0;
     protected boolean locked = false;
 
     public BasicIntel() {
@@ -68,10 +69,15 @@ public abstract class BasicIntel {
     // Copy Constructor
     public BasicIntel(BasicIntel other) {
         this.level = other.level;
+        this.mod = other.mod;
         this.locked = other.locked;
     }
 
     public int getLevel() {
+        return level + mod;
+    }
+
+    public int getBaseLevel() {
         return level;
     }
 
@@ -82,6 +88,17 @@ public abstract class BasicIntel {
         if (!locked) {
             this.level = level;
         }
+    }
+
+    public void setMod(int mod) {
+        if (mod > HIGHEST_LEVEL || mod < LOWEST_LEVEL) {
+            throw new IllegalArgumentException("Mod must be between -12 and 12, inclusive");
+        }
+        this.mod = mod;
+    }
+
+    public int getMod() {
+        return mod;
     }
 
     public void decrementLevel() {
@@ -167,6 +184,9 @@ public abstract class BasicIntel {
         for (int x = 0; x < childNodes.getLength(); x++) {
             Node item = childNodes.item(x);
             try {
+                if (item.getNodeName().equalsIgnoreCase("mod")) {
+                    mod = Integer.parseInt(item.getTextContent());
+                }
                 if (item.getNodeName().equalsIgnoreCase("locked")) {
                     locked = Boolean.parseBoolean(item.getTextContent());
                 }
