@@ -55,7 +55,8 @@ public class PersonnelIntel extends BasicIntel {
     }
 
     protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
-        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "personnelIntel", "level", getLevel(), "type", getClass());
+        MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "personnelIntel", "level", level, "type", getClass());
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "mod", mod);
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "locked", locked);
         return indent;
     }
