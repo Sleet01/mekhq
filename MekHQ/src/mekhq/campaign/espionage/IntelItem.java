@@ -278,7 +278,7 @@ public class IntelItem implements Serializable {
     public void loadFieldsFromXmlNode(Campaign campaign, Version version, Node node) throws ParseException {
         // Level is stored as an attribute of the node
         try {
-            itemId = Integer.parseInt(node.getAttributes().getNamedItem("level").getNodeValue());
+            itemId = Integer.parseInt(node.getAttributes().getNamedItem("itemId").getNodeValue());
         } catch (Exception e) {
             LOGGER.error("", e);
         }
@@ -309,8 +309,13 @@ public class IntelItem implements Serializable {
                 } else if (item.getNodeName().equalsIgnoreCase("outcomes")) {
                     NodeList outcomeNodes = item.getChildNodes();
                     for (int y = 0; y < outcomeNodes.getLength(); y++) {
-                        IntelOutcome outcome = IntelOutcome.generateInstanceFromXML(outcomeNodes.item(y), campaign, version);
-                        outcomes.add(outcome);
+                        Node outcomeNode = outcomeNodes.item(y);
+                        if (outcomeNode.getNodeName().equalsIgnoreCase("intelOutcome")) {
+                            IntelOutcome outcome = IntelOutcome.generateInstanceFromXML(outcomeNodes.item(y),
+                                  campaign,
+                                  version);
+                            outcomes.add(outcome);
+                        }
                     }
                 }
             } catch (Exception e) {
