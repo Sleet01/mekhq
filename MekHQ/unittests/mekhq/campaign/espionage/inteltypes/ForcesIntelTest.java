@@ -161,7 +161,7 @@ class ForcesIntelTest {
             forcesIntel.writeToXML(mockCampaign, pw, 0);
 
             assertEquals("<forcesIntel level=\"10\" type=\"mekhq.campaign.espionage.inteltypes.ForcesIntel\">" +
-                               "\t<locked>false</locked>\t<knownEntities>\t</knownEntities></forcesIntel>",
+                               "\t<mod>0</mod>\t<locked>false</locked>\t<knownEntities>\t</knownEntities></forcesIntel>",
                   sw.toString().replaceAll("\\n|\\r\\n", ""));
         }
     }

@@ -203,18 +203,19 @@ class IntelRatingTest {
             rating.writeToXML(mockCampaign, pw, 0);
 
             assertEquals("<intelRating type=\"mekhq.campaign.espionage.IntelRating\">\t<forcesIntel level=\"4\" " +
-                               "type=\"mekhq.campaign.espionage.inteltypes.ForcesIntel\">\t\t<locked>false</locked>\t\t" +
+                               "type=\"mekhq.campaign.espionage.inteltypes" +
+                               ".ForcesIntel\">\t\t<mod>0</mod>\t\t<locked>false</locked>\t\t" +
                                "<knownEntities>\t\t</knownEntities>\t</forcesIntel>\t<positionIntel level=\"4\" type=" +
-                               "\"mekhq.campaign.espionage.inteltypes.PositionIntel\">\t\t<locked>false</locked>\t" +
+                               "\"mekhq.campaign.espionage.inteltypes.PositionIntel\">\t\t<mod>0</mod>\t\t<locked>false</locked>\t" +
                                "</positionIntel>\t<logisticsIntel level=\"4\" type=\"mekhq.campaign.espionage.inteltypes" +
-                               ".LogisticsIntel\">\t\t<locked>false</locked>\t</logisticsIntel>\t<personnelIntel " +
-                               "level=\"4\" type=\"mekhq.campaign.espionage.inteltypes.PersonnelIntel\">\t\t<locked>false" +
+                               ".LogisticsIntel\">\t\t<mod>0</mod>\t\t<locked>false</locked>\t</logisticsIntel>\t<personnelIntel " +
+                               "level=\"4\" type=\"mekhq.campaign.espionage.inteltypes.PersonnelIntel\">\t\t<mod>0</mod>\t\t<locked>false" +
                                "</locked>\t</personnelIntel>\t<commsIntel level=\"4\" type=\"mekhq.campaign.espionage" +
-                               ".inteltypes.CommsIntel\">\t\t<locked>false</locked>\t</commsIntel>\t<financialIntel level" +
-                               "=\"4\" type=\"mekhq.campaign.espionage.inteltypes.FinancialIntel\">\t\t<locked>false" +
+                               ".inteltypes.CommsIntel\">\t\t<mod>0</mod>\t\t<locked>false</locked>\t</commsIntel>\t<financialIntel level" +
+                               "=\"4\" type=\"mekhq.campaign.espionage.inteltypes.FinancialIntel\">\t\t<mod>0</mod>\t\t<locked>false" +
                                "</locked>\t</financialIntel>\t<localIntel level=\"4\" type=\"mekhq.campaign.espionage" +
-                               ".inteltypes.LocalIntel\">\t\t<locked>false</locked>\t</localIntel>\t<counterIntel level" +
-                               "=\"4\" type=\"mekhq.campaign.espionage.inteltypes.CounterIntel\">\t\t<locked>false" +
+                               ".inteltypes.LocalIntel\">\t\t<mod>0</mod>\t\t<locked>false</locked>\t</localIntel>\t<counterIntel level" +
+                               "=\"4\" type=\"mekhq.campaign.espionage.inteltypes.CounterIntel\">\t\t<mod>0</mod>\t\t<locked>false" +
                                "</locked>\t</counterIntel>\t<assignedPersonIds>13bcf124-9468-4c40-9f2a-922b776ba7bb" +
                                "</assignedPersonIds></intelRating>",
                   sw.toString().replaceAll("\\n|\\r\\n", ""));
