@@ -36,6 +36,7 @@ package mekhq.campaign.espionage;
 import megamek.common.annotations.Nullable;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
+import mekhq.campaign.mission.AtBScenario;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -85,6 +86,15 @@ public class EspionageManager {
     public @Nullable SphereOfInfluence getSphereOfInfluence(int Id) {
         for (SphereOfInfluence sphere : spheres) {
             if (sphere.getSoiId() == Id) {
+                return sphere;
+            }
+        }
+        return null;
+    }
+
+    public @Nullable SphereOfInfluence getSphereOfInfluence(AtBScenario scenario) {
+        for (SphereOfInfluence sphere : spheres) {
+            if (sphere.getMissionId() == scenario.getMissionId()) {
                 return sphere;
             }
         }
