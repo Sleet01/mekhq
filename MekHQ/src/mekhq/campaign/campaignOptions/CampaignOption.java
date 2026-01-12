@@ -1059,6 +1059,8 @@ public final class CampaignOption<T> {
           of(Boolean.class, false, "useTwistOfFateSurvival");
     public static final CampaignOption<Boolean> USE_REPLACE_EDGE_AWARDS =
           of(Boolean.class, false, "useReplaceEdgeAwards");
+    public static final CampaignOption<Boolean> USE_ESPIONAGE_SYSTEM =
+          of(Boolean.class, true, "useEspionageSystem");
     // endregion Migrated Options
 
     private final Class<T> type;

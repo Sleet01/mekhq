@@ -380,7 +380,9 @@ public class CampaignOptionsPane extends JPanel {
         registerDirectRoute("operations.systems.reputation", this::createOperationsReputationPage,
               "strategicOperationsCategory", "systemsCategory", "reputationPage");
         registerDirectRoute("operations.systems.faction-standing", this::createOperationsFactionStandingPage,
-              "strategicOperationsCategory", "systemsCategory", "factionStandingPage");
+                "strategicOperationsCategory", "systemsCategory", "factionStandingPage");
+        registerDirectRoute("operations.systems.espionage", this::createEspionagePage,
+                "strategicOperationsCategory", "systemsCategory", "espionagePage");
         registerParentRoute("operations.rulesets", "strategicOperationsCategory", "rulesetsCategory");
         registerDirectRoute("operations.rulesets.stratcon", this::createOperationsStratConPage,
               "strategicOperationsCategory", "rulesetsCategory", "stratConGeneralPage");
@@ -801,6 +803,11 @@ public class CampaignOptionsPane extends JPanel {
     private JPanel createOperationsFactionStandingPage() {
         ensureCategoryLoaded("strategicOperationsCategory");
         return systemsPages.createFactionStandingPage();
+    }
+
+    private JPanel createEspionagePage() {
+        ensureCategoryLoaded("strategicOperationsCategory");
+        return systemsPages.createEspionagePage();
     }
 
     private JPanel createOperationsStratConPage() {

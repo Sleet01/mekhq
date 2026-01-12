@@ -53,6 +53,10 @@ import java.util.function.Supplier;
 public class IntelEvent {
     protected static final MMLogger LOGGER = MMLogger.create(IntelEvent.class);
 
+    protected static final ResourceBundle resources = ResourceBundle.getBundle(
+          "mekhq.resources.Espionage",
+          MekHQ.getMHQOptions().getLocale());
+
     public enum EventState {
         // Before start date
         NOT_STARTED,
@@ -69,10 +73,6 @@ public class IntelEvent {
         FAILED,
         DRAW
     }
-
-    protected final transient ResourceBundle resources = ResourceBundle.getBundle(
-          "mekhq.resources.Espionage",
-          MekHQ.getMHQOptions().getLocale());
 
     private EventState state = EventState.NOT_STARTED;
     private int eventId;

@@ -33,10 +33,17 @@
 
 package mekhq.campaign.espionage;
 
-import megamek.common.Player;
+import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+
 public class EspionageFactory {
+
+    protected static final ResourceBundle resources = ResourceBundle.getBundle(
+          "mekhq.resources.Espionage",
+          MekHQ.getMHQOptions().getLocale());
 
     private static EspionageFactory instance;
     // Probably some info about various intel agencies and factions goes here
@@ -60,5 +67,11 @@ public class EspionageFactory {
         IntelItem item = new IntelItem();
         // TODO: fill in
         return item;
+    }
+
+    public static ArrayList<IntelEvent> generateTutorialEventChain(Campaign campaign, SphereOfInfluence soi) {
+        ArrayList<IntelEvent> events = new ArrayList<>();
+        // TODO: fill in
+        return events;
     }
 }

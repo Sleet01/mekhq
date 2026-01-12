@@ -58,6 +58,7 @@ public class SystemsPages {
     private SystemsOptionsModel model;
     private final ReputationPage reputationPage = new ReputationPage();
     private final FactionStandingPage factionStandingPage = new FactionStandingPage();
+    private final EspionagePage espionagePage = new EspionagePage();
 
     /**
      * Constructs a new {@code SystemsPages} for the specified campaign.
@@ -96,6 +97,19 @@ public class SystemsPages {
      */
     public @Nonnull JPanel createFactionStandingPage() {
         return factionStandingPage.createPanel(model);
+    }
+
+    /**
+     * Creates the Espionage page panel, containing grouped UI elements for Espionage options and its
+     * header.
+     *
+     * @return a {@link JPanel} component representing the entire Espionage page UI
+     *
+     * @author Sleet01
+     * @since 0.51.01
+     */
+    public @Nonnull JPanel createEspionagePage() {
+        return espionagePage.createPanel(model);
     }
 
     /**
@@ -161,10 +175,12 @@ public class SystemsPages {
     private void updateCreatedControlsFromModel() {
         reputationPage.readFromModel(model);
         factionStandingPage.readFromModel(model);
+        espionagePage.readFromModel(model);
     }
 
     private void updateModelFromCreatedControls() {
         reputationPage.writeToModel(model);
         factionStandingPage.writeToModel(model);
+        espionagePage.writeToModel(model);
     }
 }

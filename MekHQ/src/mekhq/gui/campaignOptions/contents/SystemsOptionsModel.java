@@ -63,6 +63,7 @@ class SystemsOptionsModel {
     boolean useFactionStandingUnitMarket;
     boolean useFactionStandingContractPay;
     boolean useFactionStandingSupportPoints;
+    boolean useEspionageSystem;
 
     SystemsOptionsModel(@Nonnull CampaignOptions options) {
         manualUnitRatingModifier = options.get(CampaignOption.MANUAL_UNIT_RATING_MODIFIER);
@@ -91,6 +92,7 @@ class SystemsOptionsModel {
         useFactionStandingUnitMarket = options.get(CampaignOption.USE_FACTION_STANDING_UNIT_MARKET);
         useFactionStandingContractPay = options.get(CampaignOption.USE_FACTION_STANDING_CONTRACT_PAY);
         useFactionStandingSupportPoints = options.get(CampaignOption.USE_FACTION_STANDING_SUPPORT_POINTS);
+        useEspionageSystem = options.isUseEspionageSystem();
     }
 
     void applyTo(@Nonnull CampaignOptions options) {
@@ -119,5 +121,6 @@ class SystemsOptionsModel {
         options.set(CampaignOption.USE_FACTION_STANDING_UNIT_MARKET, useFactionStandingUnitMarket);
         options.set(CampaignOption.USE_FACTION_STANDING_CONTRACT_PAY, useFactionStandingContractPay);
         options.set(CampaignOption.USE_FACTION_STANDING_SUPPORT_POINTS, useFactionStandingSupportPoints);
+        options.setUseEspionageSystem(useEspionageSystem);
     }
 }
