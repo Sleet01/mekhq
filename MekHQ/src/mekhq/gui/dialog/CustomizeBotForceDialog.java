@@ -546,7 +546,7 @@ public class CustomizeBotForceDialog extends JDialog {
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.NONE;
         gbc.insets = new Insets(2, 5, 0, 0);
-        for (String en : Utilities.generateEntityStub(fixedEntities)) {
+        for (String en : Utilities.generateEntityStubs(fixedEntities)) {
             panFixedUnits.add(new JLabel(en), gbc);
             gbc.gridy++;
         }

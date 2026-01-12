@@ -1672,28 +1672,32 @@ public class Utilities {
         return summary;
     }
 
-    public static List<String> generateEntityStub(List<Entity> entities) {
+    public static List<String> generateEntityStubs(List<Entity> entities) {
         List<String> stub = new ArrayList<>();
         for (Entity en : entities) {
-            if (null == en) {
-                stub.add("<html><font color='" +
-                               ReportingUtilities.getNegativeColor() +
-                               "'>No random assignment table found for faction</font></html>");
-            } else {
-                stub.add("<html>" +
-                               en.getCrew().getName() +
-                               " (" +
-                               en.getCrew().getGunnery() +
-                               '/' +
-                               en.getCrew().getPiloting() +
-                               "), " +
-                               "<i>" +
-                               en.getShortName() +
-                               "</i>" +
-                               "</html>");
-            }
+            stub.add(generateEntityStub(en));
         }
         return stub;
+    }
+
+    public static String generateEntityStub(Entity entity) {
+        if (null == entity) {
+            return "<html><font color='" +
+                           ReportingUtilities.getNegativeColor() +
+                           "'>No random assignment table found for faction</font></html>";
+        } else {
+            return "<html>" +
+                           entity.getCrew().getName() +
+                           " (" +
+                           entity.getCrew().getGunnery() +
+                           '/' +
+                           entity.getCrew().getPiloting() +
+                           "), " +
+                           "<i>" +
+                           entity.getShortName() +
+                           "</i>" +
+                           "</html>";
+        }
     }
 
     /**

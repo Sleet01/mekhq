@@ -473,7 +473,7 @@ public class BotForce implements IPlayerSettings {
     }
 
     public BotForceStub generateStub(Campaign c) {
-        List<String> stubs = Utilities.generateEntityStub(getFullEntityList(c));
+        List<String> stubs = Utilities.generateEntityStubs(getFullEntityList(c));
         return new BotForceStub("<html>" +
                                       getName() +
                                       " <i>" +
