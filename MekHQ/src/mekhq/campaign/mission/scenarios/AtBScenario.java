@@ -1850,7 +1850,7 @@ public abstract class AtBScenario extends Scenario implements IAtBScenario {
     @Override
     public void generateStub(Campaign c) {
         super.generateStub(c);
-        alliesPlayerStub = Utilities.generateEntityStub(alliesPlayer);
+        alliesPlayerStub = Utilities.generateEntityStubs(alliesPlayer);
 
         alliesPlayer.clear();
         if (null != bigBattleAllies) {

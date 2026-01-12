@@ -36,6 +36,7 @@ package mekhq.gui.view;
 import static megamek.common.options.OptionsConstants.BASE_BLIND_DROP;
 import static megamek.common.options.OptionsConstants.BASE_REAL_BLIND_DROP;
 import static megamek.common.units.Entity.getEntityMajorTypeName;
+import static mekhq.Utilities.generateEntityStub;
 import static mekhq.utilities.MHQInternationalization.getTextAt;
 
 import java.awt.BorderLayout;
@@ -67,15 +68,21 @@ import megamek.client.ui.dialogs.UnitEditorDialog;
 import megamek.client.ui.dialogs.buttonDialogs.BotConfigDialog;
 import megamek.common.annotations.Nullable;
 import megamek.common.interfaces.IStartingPositions;
+import megamek.common.options.GameOptions;
 import megamek.common.planetaryConditions.Atmosphere;
 import megamek.common.planetaryConditions.PlanetaryConditions;
 import megamek.common.units.Entity;
+import megamek.common.units.ObscuredEntity;
 import mekhq.MekHQ;
 import mekhq.Utilities;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.campaignOptions.CampaignOption;
 import mekhq.campaign.force.Formation;
 import mekhq.campaign.force.FormationStub;
+import mekhq.campaign.campaignOptions.CampaignOptions;
+import mekhq.campaign.espionage.EspionageManager;
+import mekhq.campaign.espionage.IntelRating;
+import mekhq.campaign.espionage.SphereOfInfluence;
 import mekhq.campaign.force.UnitStub;
 import mekhq.campaign.mission.scenarios.AtBDynamicScenario;
 import mekhq.campaign.mission.scenarios.AtBScenario;
@@ -461,6 +468,82 @@ public class AtBScenarioViewPanel extends JScrollablePanel {
         }
     }
 
+    private ArrayList<JTree> addObscuredBotForceStats(
+          int playerTeam,
+          List<BotForceStub> stubs,
+          Campaign curCampaign,
+          AtBScenario curScenario,
+          GameOptions options,
+          CampaignOptions campaignOptions
+    ) {
+        ArrayList<JTree> trees = new ArrayList<>();
+        boolean isBlindDrop = options.getOption(BASE_BLIND_DROP).booleanValue();
+        boolean isTrueBlindDrop = options.getOption(BASE_REAL_BLIND_DROP).booleanValue();
+        boolean useEspionage = campaignOptions.isUseEspionageSystem();
+        boolean isCurrent = curScenario.getStatus().isCurrent();
+
+        // Get SOI for this scenario, assuming AtB scenario
+        EspionageManager espionageManager = (useEspionage) ? EspionageManager.getInstance() : null;
+        SphereOfInfluence soi = (espionageManager != null) ? espionageManager.getSphereOfInfluence(curScenario) : null;
+
+        for (int i = 0; i < stubs.size(); i++) {
+            BotForceStub botStub = stubs.get(i);
+            if (botStub == null) {
+                continue;
+            }
+
+            int team = botStub.team();
+            List<String> allEntries = botStub.entityList();
+            DefaultMutableTreeNode top = new DefaultMutableTreeNode(stubs.get(i).name());
+
+            if (useEspionage && (team != playerTeam)) {
+                // Espionage-style information obscuring, but only for enemies
+                // We _should_ have a rating for every foe in this scenario, which means ever bot force
+                IntelRating rating = (soi != null) ? soi.getActorRatingForFoe(playerTeam, team) : new IntelRating(0);
+                for (String entityString : allEntries) {
+                    int unitIndex = allEntries.indexOf(entityString);
+                    Entity entity = curScenario.getBotForce(i).getFullEntityList(curCampaign).get(unitIndex);
+                    ObscuredEntity obscuredEntity = new ObscuredEntity(entity, rating.getForcesIntel(),
+                          rating.getPositionIntel(), rating.getLogisticsIntel(), rating.getPersonnelIntel());
+
+                    String label = generateEntityStub(obscuredEntity);
+                    top.add(new DefaultMutableTreeNode());
+                }
+
+            } else if (!(isTrueBlindDrop && (team != playerTeam))) {
+                // Blind Drop hiding
+                boolean hideInformation = isCurrent && isBlindDrop && (team != playerTeam);
+                for (String entityString : allEntries) {
+                    if (hideInformation) {
+                        int unitIndex = allEntries.indexOf(entityString);
+                        Entity entity = curScenario.getBotForce(i).getFullEntityList(curCampaign).get(unitIndex);
+
+                        if (entity == null) {
+                            String label = "???";
+                            top.add(new DefaultMutableTreeNode(label));
+                            continue;
+                        }
+
+                        String weightClass = entity.getWeightClassName();
+                        long entityType = entity.getEntityType();
+                        String unitType = getEntityMajorTypeName(entityType);
+
+                        String label = weightClass + ' ' + unitType;
+                        top.add(new DefaultMutableTreeNode(label));
+                    } else {
+                        top.add(new DefaultMutableTreeNode(entityString));
+                    }
+                }
+            }
+            JTree tree = new JTree(top);
+            tree.collapsePath(new TreePath(top));
+            tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+            trees.add(tree);
+        }
+
+        return trees;
+    }
+
     private int addForceTrees(int row) {
         playerForceTree.setModel(playerForceModel);
         playerForceTree.setCellRenderer(new ForceStubRenderer());
@@ -500,6 +583,34 @@ public class AtBScenarioViewPanel extends JScrollablePanel {
             gridBagConstraints.fill = GridBagConstraints.BOTH;
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
             panStats.add(tree, gridBagConstraints);
+        }
+
+        // Handle obscuring bot force stub info based on various options
+        // TODO: replace magic team number with Team attached to Campaign or Player for MP updates
+        ArrayList<JTree> trees = addObscuredBotForceStats(
+              1,
+              botStubs,
+              campaign,
+              scenario,
+              campaign.getGameOptions(),
+              campaign.getCampaignOptions()
+        );
+
+        for (int i = 0; i < trees.size(); i++) {
+            JTree tree = trees.get(i);
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = y++;
+            gridBagConstraints.gridwidth = 3;
+            gridBagConstraints.gridheight = 1;
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.weighty = 1.0;
+            gridBagConstraints.insets = new Insets(5, 5, 5, 5);
+            gridBagConstraints.fill = GridBagConstraints.BOTH;
+            gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+            panStats.add(tree, gridBagConstraints);
+            if (scenario.getStatus().isCurrent()) {
+                tree.addMouseListener(new TreeMouseAdapter(tree, i));
+            }
         }
 
         boolean isBlindDrop = campaign.getGameOptions().getOption(BASE_BLIND_DROP).booleanValue();
