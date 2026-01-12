@@ -1680,7 +1680,7 @@ public class Utilities {
         return stub;
     }
 
-    public static String generateEntityStub(Entity entity) {
+    public static String generateEntityStub(IContact entity) {
         if (null == entity) {
             return "<html><font color='" +
                            ReportingUtilities.getNegativeColor() +
