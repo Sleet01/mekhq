@@ -236,6 +236,8 @@ public class CampaignOptions {
         get(CampaignOption.ATB_BATTLE_CHANCE)[CombatRole.TRAINING.ordinal()] = 10;
 
         set(CampaignOption.USE_FACTION_STANDING_OUTLAWED, true);
+
+        setUseEspionageSystem(true);
     }
 
     /**
@@ -687,6 +689,10 @@ public class CampaignOptions {
      */
     public boolean isUseFactionStandingSupportPointsSafe() {
         return get(CampaignOption.TRACK_FACTION_STANDING) && get(CampaignOption.USE_FACTION_STANDING_SUPPORT_POINTS);
+    }
+
+    public void setUseEspionageSystem(boolean useEspionageSystem) {
+        set(CampaignOption.USE_ESPIONAGE_SYSTEM, useEspionageSystem);
     }
 
     /**

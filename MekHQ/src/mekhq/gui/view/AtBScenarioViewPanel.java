@@ -165,7 +165,7 @@ public class AtBScenarioViewPanel extends JScrollablePanel {
             s.refresh(c);
             playerForces = new FormationStub(s.getForces(campaign), campaign);
             attachedAllyStub = Utilities.generateEntityStub(s.getAlliesPlayer());
-            for (int i = 0; i < s.getNumBots(); i++) {
+            for (int i = 0; i < s.getNumBots(); i++) { // Actually, change how we get force stubs!
                 botStubs.add(s.getBotForce(i).generateStub(campaign));
             }
         } else {

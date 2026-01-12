@@ -140,6 +140,7 @@ import mekhq.campaign.digitalGM.stratCon.StratConRulesManager;
 import mekhq.campaign.enums.CampaignTransportType;
 import mekhq.campaign.enums.DailyReportType;
 import mekhq.campaign.enums.LithiumFusionBatteryMode;
+import mekhq.campaign.espionage.EspionageManager;
 import mekhq.campaign.events.*;
 import mekhq.campaign.events.loans.LoanNewEvent;
 import mekhq.campaign.events.loans.LoanPaidEvent;
@@ -6503,5 +6504,9 @@ public class Campaign implements ITechManager {
      */
     public Collection<HPGLink> getHPGNetwork() {
         return systemsInstance.getHPGNetwork(currentDay);
+    }
+
+    public EspionageManager getEspionageManager() {
+        return EspionageManager.getInstance(this);
     }
 }
