@@ -503,8 +503,13 @@ public class AtBScenarioViewPanel extends JScrollablePanel {
                 for (String entityString : allEntries) {
                     int unitIndex = allEntries.indexOf(entityString);
                     Entity entity = curScenario.getBotForce(i).getFullEntityList(curCampaign).get(unitIndex);
-                    ObscuredEntity obscuredEntity = new ObscuredEntity(entity, rating.getForcesIntel(),
-                          rating.getPositionIntel(), rating.getLogisticsIntel(), rating.getPersonnelIntel());
+                    ObscuredEntity obscuredEntity = new ObscuredEntity(
+                          entity,
+                          rating.getForcesIntel().getLevel(),
+                          rating.getPositionIntel().getLevel(),
+                          rating.getLogisticsIntel().getLevel(),
+                          rating.getPersonnelIntel().getLevel()
+                    );
 
                     String label = generateEntityStub(obscuredEntity);
                     top.add(new DefaultMutableTreeNode());
