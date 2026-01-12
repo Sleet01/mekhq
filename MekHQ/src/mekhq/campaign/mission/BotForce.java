@@ -489,6 +489,7 @@ public class BotForce implements IPlayerSettings {
                                       "</html>", stubs, getTeam());
     }
 
+
     public void writeToXML(final PrintWriter pw, int indent) {
         MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "botForce");
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "name", name);

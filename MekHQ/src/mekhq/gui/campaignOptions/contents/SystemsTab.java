@@ -46,6 +46,7 @@ import megamek.common.annotations.Nullable;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.campaignOptions.CampaignOptions;
 import mekhq.campaign.personnel.skills.RandomSkillPreferences;
+import mekhq.gui.campaignOptions.CampaignOptionsPane;
 import mekhq.gui.campaignOptions.components.CampaignOptionsCheckBox;
 import mekhq.gui.campaignOptions.components.CampaignOptionsGridBagConstraints;
 import mekhq.gui.campaignOptions.components.CampaignOptionsHeaderPanel;
@@ -71,6 +72,7 @@ public class SystemsTab {
 
     // Reputation Tab
     private CampaignOptionsHeaderPanel reputationHeader;
+    private CampaignOptionsHeaderPanel espionageHeader;
 
     private JCheckBox chkResetCriminalRecord;
 
@@ -108,6 +110,8 @@ public class SystemsTab {
     private JCheckBox chkAllowMonthlyConnections;
     private JCheckBox chkUseBetterExtraIncome;
     private JCheckBox chkUseSmallArmsOnly;
+
+    private JCheckBox chkEnableEspionageSystem;
 
     /**
      * Constructs a new {@code SystemsTab} for the specified campaign.
@@ -161,6 +165,30 @@ public class SystemsTab {
         return createParentPanel(panel, "ReputationTab");
     }
 
+    public JPanel createEspionageTab() {
+        // Header
+        espionageHeader = new CampaignOptionsHeaderPanel("EspionageTab",
+              getImageDirectory() + "logo_espionage_symbol.png",
+              8);
+        JPanel pnlEspionageGeneralOptions = createEspionageGeneralPanel();
+
+        // Layout the Panel
+        final JPanel panel = new CampaignOptionsStandardPanel("EspionageTab", true);
+        final GridBagConstraints layoutParent = new CampaignOptionsGridBagConstraints(panel);
+
+        layoutParent.gridwidth = 5;
+        layoutParent.gridx = 0;
+        layoutParent.gridy = 0;
+        panel.add(espionageHeader, layoutParent);
+
+        layoutParent.gridy++;
+        layoutParent.gridwidth = 1;
+        panel.add(pnlEspionageGeneralOptions, layoutParent);
+
+        // Create Parent Panel and return
+        return createParentPanel(panel, "EspionageTab");
+    }
+
     /**
      * Creates and lays out the general reputation options panel, including controls for selecting unit rating method,
      * manual modifiers, and criminal record reset.
@@ -195,6 +223,30 @@ public class SystemsTab {
         layout.gridx = 0;
         layout.gridy++;
         panel.add(chkResetCriminalRecord, layout);
+
+        return panel;
+    }
+
+    /**
+     * Creates and lays out the general espionage options panel
+     *
+     * @return a {@link JPanel} containing the general espionage controls
+     *
+     * @author sleet01
+     * @since 0.50.12
+     */
+    private JPanel createEspionageGeneralPanel() {
+        final JPanel panel = new CampaignOptionsStandardPanel("EspionageGeneralOptionsPanel");
+        final GridBagConstraints layout = new CampaignOptionsGridBagConstraints(panel);
+
+        chkEnableEspionageSystem = new CampaignOptionsCheckBox("EnableEspionageSystem");
+        chkEnableEspionageSystem.addMouseListener(createTipPanelUpdater(espionageHeader, "EnableEspionageSystem"));
+
+        layout.gridy = 0;
+        layout.gridx = 0;
+        layout.gridwidth = 1;
+
+        panel.add(chkEnableEspionageSystem, layout);
 
         return panel;
     }
@@ -553,6 +605,10 @@ public class SystemsTab {
         chkAllowMonthlyConnections.setSelected(options.isAllowMonthlyConnections());
         chkUseBetterExtraIncome.setSelected(options.isUseBetterExtraIncome());
         chkUseSmallArmsOnly.setSelected(options.isUseSmallArmsOnly());
+
+        // Espionage
+        chkEnableEspionageSystem.setSelected(options.isUseEspionageSystem());
+
     }
 
     /**

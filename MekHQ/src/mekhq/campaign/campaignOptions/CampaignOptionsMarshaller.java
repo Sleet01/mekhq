@@ -1229,6 +1229,10 @@ public class CampaignOptionsMarshaller {
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "factionStandingGainMultiplier",
               campaignOptions.getRegardMultiplier());
 
+        // start region Espionage System
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "useEspionageSystem", campaignOptions.isUseEspionageSystem());
+        // end region Espionage System
+
         MHQXMLUtility.writeSimpleXMLCloseTag(pw, --indent, "campaignOptions");
     }
 }

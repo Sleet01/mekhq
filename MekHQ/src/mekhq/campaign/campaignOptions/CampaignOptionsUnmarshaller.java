@@ -948,6 +948,8 @@ public class CampaignOptionsUnmarshaller {
                   nodeContents));
             case "factionStandingGainMultiplier" -> campaignOptions.setRegardMultiplier(parseDouble(
                   nodeContents, 1.0));
+            case "useEspionageSystem" -> campaignOptions.setUseEspionageSystem(parseBoolean(
+                  nodeContents));
             default -> LOGGER.warn("Potentially unexpected entry in campaign options: {}", nodeName);
         }
 

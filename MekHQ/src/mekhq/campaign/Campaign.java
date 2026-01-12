@@ -140,6 +140,7 @@ import mekhq.campaign.campaignOptions.CampaignOptionsMarshaller;
 import mekhq.campaign.enums.CampaignTransportType;
 import mekhq.campaign.enums.DailyReportType;
 import mekhq.campaign.enums.DragoonRating;
+import mekhq.campaign.espionage.EspionageManager;
 import mekhq.campaign.events.*;
 import mekhq.campaign.events.loans.LoanNewEvent;
 import mekhq.campaign.events.loans.LoanPaidEvent;
@@ -10166,5 +10167,9 @@ public class Campaign implements ITechManager {
      */
     public void setSystemsInstance(Systems systemsInstance) {
         this.systemsInstance = systemsInstance;
+    }
+
+    public EspionageManager getEspionageManager() {
+        return EspionageManager.getInstance(this);
     }
 }

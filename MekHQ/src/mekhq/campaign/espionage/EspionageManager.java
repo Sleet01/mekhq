@@ -34,12 +34,18 @@
 package mekhq.campaign.espionage;
 
 import megamek.common.annotations.Nullable;
+import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 
 public class EspionageManager {
+
+    protected static final ResourceBundle resources = ResourceBundle.getBundle(
+          "mekhq.resources.Espionage",
+          MekHQ.getMHQOptions().getLocale());
 
     private static EspionageManager instance;
 

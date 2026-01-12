@@ -695,6 +695,10 @@ public class CampaignOptions {
     private boolean useFactionStandingSupportPoints;
     private double regardMultiplier;
     //endregion Faction Standing
+
+    // start region Espionage System
+    private boolean useEspionageSystem;
+    // end region Espionage System
     // endregion Variable Declarations
 
     // region Constructors
@@ -1367,6 +1371,10 @@ public class CampaignOptions {
         useFactionStandingSupportPoints = true;
         regardMultiplier = 1.0;
         // endregion Against the Bot Tab
+
+        // start region Espionage System
+        useEspionageSystem = true;
+        // end region Espionage System
     }
     // endregion Constructors
 
@@ -5813,6 +5821,14 @@ public class CampaignOptions {
 
     public void setMinimumCallsignSkillLevel(SkillLevel skillLevel) {
         this.minimumCallsignSkillLevel = skillLevel;
+    }
+
+    public boolean isUseEspionageSystem() {
+        return useEspionageSystem;
+    }
+
+    public void setUseEspionageSystem(boolean useEspionageSystem) {
+        this.useEspionageSystem = useEspionageSystem;
     }
 
     /**

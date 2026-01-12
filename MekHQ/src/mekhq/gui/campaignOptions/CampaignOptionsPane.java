@@ -464,7 +464,8 @@ public class CampaignOptionsPane extends AbstractMHQTabbedPane {
         JTabbedPane systemsContentTabs = createSubTabs(Map.of(
               "reputationTab", systemsTab.createReputationTab(),
               "factionStandingTab", systemsTab.createFactionStandingTab(),
-              "atowTab", systemsTab.createATOWTab()));
+              "atowTab", systemsTab.createATOWTab(),
+              "espionageTab", systemsTab.createEspionageTab()));
         systemsTab.loadValuesFromCampaignOptions();
 
         // Rulesets
