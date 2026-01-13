@@ -536,7 +536,7 @@ public class AtBScenarioViewPanel extends JScrollablePanel {
 
             if (useEspionage && (team != playerTeam)) {
                 // Espionage-style information obscuring, but only for enemies
-                // We _should_ have a rating for every foe in this scenario, which means ever bot force
+                // We _should_ have a rating for every foe in this scenario, which means every enemy bot _team_
                 IntelRating rating = (soi != null) ? soi.getActorRatingForFoe(playerTeam, team) : new IntelRating(0);
                 for (String entityString : allEntries) {
                     int unitIndex = allEntries.indexOf(entityString);
@@ -549,8 +549,9 @@ public class AtBScenarioViewPanel extends JScrollablePanel {
                           rating.getPersonnelIntel().getLevel()
                     );
 
+                    // Also add known entities to ForcesIntel here?
                     String label = generateEntityStub(obscuredEntity);
-                    top.add(new DefaultMutableTreeNode());
+                    top.add(new DefaultMutableTreeNode(label));
                 }
 
             } else if (!(isTrueBlindDrop && (team != playerTeam))) {
