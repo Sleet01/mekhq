@@ -55,6 +55,7 @@ import java.awt.GridLayout;
 import java.io.File;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -83,6 +84,7 @@ import megamek.common.options.OptionsConstants;
 import megamek.common.ui.FastJScrollPane;
 import megamek.common.units.Entity;
 import megamek.common.units.EntityListFile;
+import megamek.common.units.ObscuredEntity;
 import megamek.common.util.sorter.NaturalOrderComparator;
 import megamek.logging.MMLogger;
 import megameklab.util.UnitPrintManager;
@@ -1644,14 +1646,14 @@ public final class BriefingTab extends CampaignGuiTab {
         Game cGame = getCampaign().getGame();
         boolean groundMap = scenario.getBoardType() == AtBScenario.T_GROUND;
         boolean spaceMap = scenario.getBoardType() == AtBScenario.T_SPACE;
-        ArrayList<Entity> alliedEntities = new ArrayList<>();
+        ArrayList<ObscuredEntity> alliedEntities = new ArrayList<>();
 
         ArrayList<String> allyFactionCodes = new ArrayList<>();
         ArrayList<String> opForFactionCodes = new ArrayList<>();
         String opForFactionCode = "IS";
         String allyFaction = "IS";
         int opForQuality = RATING_5;
-        HashMap<Integer, ArrayList<Entity>> botTeamMappings = new HashMap<>();
+        HashMap<Integer, ArrayList<ObscuredEntity>> botTeamMappings = new HashMap<>();
         int allowedYear = cGame.getOptions().intOption(OptionsConstants.ALLOWED_YEAR);
 
         // This had better be an AtB contract...
@@ -1669,19 +1671,20 @@ public final class BriefingTab extends CampaignGuiTab {
         boolean isPirate = opforFaction.isRebelOrPirate();
 
         // Collect player units to use as configuration fodder
-        ArrayList<Entity> playerEntities = new ArrayList<>();
+        ArrayList<ObscuredEntity> playerEntities = new ArrayList<>();
         for (final Unit unit : chosen) {
-            playerEntities.add(unit.getEntity());
+            playerEntities.add(new ObscuredEntity(unit.getEntity()));
+            // TODO: update with actual level values from IntelRating
         }
         allyFactionCodes.add(getCampaign().getFaction().getShortName());
 
         // Split up bot forces into teams for separate handling
         for (final BotForce botForce : scenario.getBotForces()) {
             // Do not include Turrets
-            List<Entity> filteredEntityList =
+            List<ObscuredEntity> filteredEntityList =
                   botForce.getFixedEntityList().stream().filter(
                         e -> !(e.isBuildingEntityOrGunEmplacement())
-                  ).toList();
+                  ).map(ObscuredEntity::new).toList();
             if (botForce.getName().contains(allyFaction)) {
                 // Stuff with our employer's name should be with us.
                 playerEntities.addAll(filteredEntityList);
@@ -1696,47 +1699,37 @@ public final class BriefingTab extends CampaignGuiTab {
         }
 
         // Configure generated units with appropriate munitions (for BV calculations)
-        TeamLoadOutGenerator tlg = new TeamLoadOutGenerator(cGame);
 
         // Reconfigure each group separately so they only consider their own
         // capabilities
-        for (ArrayList<Entity> entityList : botTeamMappings.values()) {
-            // bin fill ratio will be adjusted by the loadout generator based on piracy and
-            // quality
-            ReconfigurationParameters rp = TeamLoadOutGenerator.generateParameters(cGame,
-                  cGame.getOptions(),
+        for (ArrayList<ObscuredEntity> entityList : botTeamMappings.values()) {
+            TeamLoadOutGenerator.configureForceMunitions(
+                  cGame,
                   entityList,
                   opForFactionCode,
                   playerEntities,
                   allyFactionCodes,
                   opForQuality,
-                  ((isPirate) ? TeamLoadOutGenerator.UNSET_FILL_RATIO : 1.0f));
-            rp.isPirate = isPirate;
-            rp.groundMap = groundMap;
-            rp.spaceEnvironment = spaceMap;
-            MunitionTree mt = TeamLoadOutGenerator.generateMunitionTree(rp, entityList, "");
-            // We now have the ability to pre-create a munition availability map for use with special scenarios,
-            // representing limited-availability ammo in the hands of a specific force.
-            tlg.reconfigureEntities(entityList, opForFactionCode, mt, rp, null);
+                  isPirate,
+                  groundMap,
+                  spaceMap
+            );
         }
 
         // Finally, reconfigure all allies (but not player entities) as one organization
-        ArrayList<Entity> allEnemyEntities = new ArrayList<>();
+        ArrayList<ObscuredEntity> allEnemyEntities = new ArrayList<>();
         botTeamMappings.values().forEach(allEnemyEntities::addAll);
-        ReconfigurationParameters rp = TeamLoadOutGenerator.generateParameters(cGame,
-              cGame.getOptions(),
+        TeamLoadOutGenerator.configureForceMunitions(
+              cGame,
               alliedEntities,
               allyFactionCodes.get(0),
               allEnemyEntities,
               opForFactionCodes,
               opForQuality,
-              (getCampaign().getFaction().isPirate()) ? TeamLoadOutGenerator.UNSET_FILL_RATIO : 1.0f);
-        rp.isPirate = getCampaign().getFaction().isPirate();
-        rp.groundMap = groundMap;
-        rp.spaceEnvironment = spaceMap;
-        MunitionTree mt = TeamLoadOutGenerator.generateMunitionTree(rp, alliedEntities, "");
-        tlg.reconfigureEntities(alliedEntities, allyFactionCodes.get(0), mt, rp, null);
-
+              getCampaign().getFaction().isPirate(),
+              groundMap,
+              spaceMap
+        );
     }
 
     private void joinScenario() {
