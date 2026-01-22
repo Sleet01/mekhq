@@ -499,7 +499,7 @@ public class AtBScenarioViewPanel extends JScrollablePanel {
             if (useEspionage && (team != playerTeam)) {
                 // Espionage-style information obscuring, but only for enemies
                 // We _should_ have a rating for every foe in this scenario, which means every enemy bot _team_
-                IntelRating rating = (soi != null) ? soi.getActorRatingForFoe(playerTeam, team) : new IntelRating(0);
+                IntelRating rating = (soi != null) ? soi.getActorRatingForFoe(playerTeam, team) : new IntelRating(12);
                 for (String entityString : allEntries) {
                     int unitIndex = allEntries.indexOf(entityString);
                     Entity entity = curScenario.getBotForce(i).getFullEntityList(curCampaign).get(unitIndex);
