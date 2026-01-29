@@ -2227,9 +2227,15 @@ public final class BriefingTab extends CampaignGuiTab {
         // Collect player units to use as configuration fodder
         ArrayList<ObscuredEntity> playerEntities = new ArrayList<>();
         for (final Unit unit : chosen) {
-            // Default ObscuredEntity wrapper does not obscure anything.
-            playerEntities.add(new ObscuredEntity(unit.getEntity()));
             // TODO: update with actual level values from IntelRating
+            ObscuredEntity obscuredEntity = new ObscuredEntity(
+                  unit.getEntity(),
+                  10,
+                  10,
+                  10,
+                  10
+            );
+            playerEntities.add(obscuredEntity);
         }
         allyFactionCodes.add(getCampaign().getPlayerForce().getFaction().getShortName());
 
