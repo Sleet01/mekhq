@@ -67,12 +67,11 @@ import javax.swing.table.TableRowSorter;
 
 import megamek.client.bot.princess.BehaviorSettings;
 import megamek.client.bot.princess.PrincessException;
-import megamek.client.generator.ReconfigurationParameters;
 import megamek.client.generator.TeamLoadOutGenerator;
+import megamek.client.ratgenerator.ForceDescriptor;
 import megamek.client.ui.comboBoxes.MMComboBox;
 import megamek.codeUtilities.ObjectUtility;
 import megamek.common.annotations.Nullable;
-import megamek.common.containers.MunitionTree;
 import megamek.common.event.Subscribe;
 import megamek.common.game.Game;
 import megamek.common.options.OptionsConstants;
@@ -2208,7 +2207,7 @@ public final class BriefingTab extends CampaignGuiTab {
         ArrayList<String> opForFactionCodes = new ArrayList<>();
         String opForFactionCode = "IS";
         String allyFaction = "IS";
-        int opForQuality = RATING_5;
+        int opForQuality = ForceDescriptor.RATING_5;
         HashMap<Integer, ArrayList<ObscuredEntity>> botTeamMappings = new HashMap<>();
         int allowedYear = cGame.getOptions().intOption(OptionsConstants.ALLOWED_YEAR);
 
