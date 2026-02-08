@@ -52,6 +52,7 @@ public enum MHQTabType {
     TOE("MHQTabType.TOE.text", KeyEvent.VK_T),
     BRIEFING_ROOM("MHQTabType.BRIEFING_ROOM.text", KeyEvent.VK_B),
     STRAT_CON("MHQTabType.STRAT_CON.text", KeyEvent.VK_C),
+    ESPIONAGE("MHQTabType.ESPIONAGE.text", KeyEvent.VK_E),
     PERSONNEL("MHQTabType.PERSONNEL.text", KeyEvent.VK_P),
     HANGAR("MHQTabType.HANGAR.text", KeyEvent.VK_H),
     REPAIR_BAY("MHQTabType.REPAIR_BAY.text", KeyEvent.VK_R),
@@ -130,6 +131,24 @@ public enum MHQTabType {
         return this == STRAT_CON;
     }
     //endregion Boolean Comparison Methods
+
+    public @Nullable CampaignGuiTab createTab(final CampaignGUI gui) {
+        return switch (this) {
+            case COMMAND_CENTER -> new CommandCenterTab(gui, toString());
+            case TOE -> new TOETab(gui, toString());
+            case BRIEFING_ROOM -> new BriefingTab(gui, toString());
+            case INTERSTELLAR_MAP -> new MapTab(gui, toString());
+            case ESPIONAGE -> new EspionageTab(gui, toString());
+            case PERSONNEL -> new PersonnelTab(gui, toString());
+            case HANGAR -> new HangarTab(gui, toString());
+            case WAREHOUSE -> new WarehouseTab(gui, toString());
+            case REPAIR_BAY -> new RepairTab(gui, toString());
+            case INFIRMARY -> new InfirmaryTab(gui, toString());
+            case FINANCES -> new FinancesTab(gui, toString());
+            case MEK_LAB -> new MekLabTab(gui, toString());
+            case STRAT_CON -> new StratConTab(gui, toString());
+        };
+    }
 
     @Override
     public String toString() {

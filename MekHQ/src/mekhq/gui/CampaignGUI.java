@@ -175,6 +175,7 @@ public class CampaignGUI extends JPanel {
     private final PersonnelTab personnelTab;
     private final HangarTab hangarTab;
     private final WarehouseTab warehouseTab;
+    private final EspionageTab espionageTab;
     private final RepairTab repairBayTab;
     private final InfirmaryTab infirmaryTab;
     private final MekLabTab mekLabTab;
@@ -227,6 +228,7 @@ public class CampaignGUI extends JPanel {
         personnelTab = new PersonnelTab(this, MHQTabType.PERSONNEL.toString());
         hangarTab = new HangarTab(this, MHQTabType.HANGAR.toString());
         warehouseTab = new WarehouseTab(this, MHQTabType.WAREHOUSE.toString());
+        espionageTab = new EspionageTab(this, MHQTabType.ESPIONAGE.toString());
         repairBayTab = new RepairTab(this, MHQTabType.REPAIR_BAY.toString());
         infirmaryTab = new InfirmaryTab(this, MHQTabType.INFIRMARY.toString());
         mekLabTab = new MekLabTab(this, MHQTabType.MEK_LAB.toString());
@@ -315,6 +317,22 @@ public class CampaignGUI extends JPanel {
         tabMain.setToolTipText("");
         tabMain.setMinimumSize(new Dimension(600, 200));
         tabMain.setPreferredSize(new Dimension(900, 300));
+
+        addStandardTab(COMMAND_CENTER);
+        addStandardTab(MHQTabType.TOE);
+        addStandardTab(MHQTabType.BRIEFING_ROOM);
+        if (getCampaign().getCampaignOptions().isUseStratCon()) {
+            addStandardTab(MHQTabType.STRAT_CON);
+        }
+        addStandardTab(MHQTabType.INTERSTELLAR_MAP);
+        addStandardTab(MHQTabType.ESPIONAGE);
+        addStandardTab(MHQTabType.PERSONNEL);
+        addStandardTab(MHQTabType.HANGAR);
+        addStandardTab(MHQTabType.WAREHOUSE);
+        addStandardTab(MHQTabType.REPAIR_BAY);
+        addStandardTab(MHQTabType.INFIRMARY);
+        addStandardTab(MHQTabType.MEK_LAB);
+        addStandardTab(MHQTabType.FINANCES);
 
         boolean isMaplessMode = getCampaign().getCampaignOptions().isUseStratConMaplessMode();
         int stratConTabIndex = tabMain.indexOfTab(MHQTabType.STRAT_CON.toString());
@@ -606,6 +624,9 @@ public class CampaignGUI extends JPanel {
 
     public WarehouseTab getWarehouseTab() {
         return warehouseTab;
+
+    public EspionageTab getEspionageTab() {
+        return espionageTab;
     }
 
     public RepairTab getRepairBayTab() {
