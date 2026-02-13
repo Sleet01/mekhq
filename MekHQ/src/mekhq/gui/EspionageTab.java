@@ -62,6 +62,19 @@ import java.util.List;
 import java.util.*;
 
 /**
+ * Tile for filling
+ */
+class EspionagePersonTile extends JPanel {
+
+    final Person person;
+
+    public EspionagePersonTile(Person person) {
+        this.person = person;
+    }
+
+}
+
+/**
  * Tab for managing Espionage personnel and events, if enabled
  */
 public final class EspionageTab extends CampaignGuiTab {
