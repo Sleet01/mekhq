@@ -244,6 +244,9 @@ public class CampaignGUI extends JPanel {
         activateTab(personnelTab);
         activateTab(hangarTab);
         activateTab(warehouseTab);
+        if (getCampaign().getCampaignOptions().isUseEspionageSystem()) {
+            activateTab(espionageTab);
+        }
         activateTab(repairBayTab);
         activateTab(infirmaryTab);
         activateTab(mekLabTab);
@@ -317,22 +320,6 @@ public class CampaignGUI extends JPanel {
         tabMain.setToolTipText("");
         tabMain.setMinimumSize(new Dimension(600, 200));
         tabMain.setPreferredSize(new Dimension(900, 300));
-
-        addStandardTab(COMMAND_CENTER);
-        addStandardTab(MHQTabType.TOE);
-        addStandardTab(MHQTabType.BRIEFING_ROOM);
-        if (getCampaign().getCampaignOptions().isUseStratCon()) {
-            addStandardTab(MHQTabType.STRAT_CON);
-        }
-        addStandardTab(MHQTabType.INTERSTELLAR_MAP);
-        addStandardTab(MHQTabType.ESPIONAGE);
-        addStandardTab(MHQTabType.PERSONNEL);
-        addStandardTab(MHQTabType.HANGAR);
-        addStandardTab(MHQTabType.WAREHOUSE);
-        addStandardTab(MHQTabType.REPAIR_BAY);
-        addStandardTab(MHQTabType.INFIRMARY);
-        addStandardTab(MHQTabType.MEK_LAB);
-        addStandardTab(MHQTabType.FINANCES);
 
         boolean isMaplessMode = getCampaign().getCampaignOptions().isUseStratConMaplessMode();
         int stratConTabIndex = tabMain.indexOfTab(MHQTabType.STRAT_CON.toString());
@@ -624,6 +611,7 @@ public class CampaignGUI extends JPanel {
 
     public WarehouseTab getWarehouseTab() {
         return warehouseTab;
+    }
 
     public EspionageTab getEspionageTab() {
         return espionageTab;
@@ -679,6 +667,7 @@ public class CampaignGUI extends JPanel {
             case HANGAR -> Optional.of(getHangarTab());
             case REPAIR_BAY -> Optional.of(getRepairBayTab());
             case WAREHOUSE -> Optional.of(getWarehouseTab());
+            case ESPIONAGE -> Optional.of(getEspionageTab());
             case INFIRMARY -> Optional.of(getInfirmaryTab());
             case FINANCES -> Optional.of(getFinancesTab());
             case MEK_LAB -> Optional.of(getMekLabTab());

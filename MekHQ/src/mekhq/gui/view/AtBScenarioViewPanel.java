@@ -606,7 +606,7 @@ public class AtBScenarioViewPanel extends JScrollablePanel {
         for (int i = 0; i < trees.size(); i++) {
             JTree tree = trees.get(i);
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = y++;
+            gridBagConstraints.gridy = row++;
             gridBagConstraints.gridwidth = 3;
             gridBagConstraints.gridheight = 1;
             gridBagConstraints.weightx = 1.0;
