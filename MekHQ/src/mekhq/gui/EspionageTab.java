@@ -132,6 +132,7 @@ public final class EspionageTab extends CampaignGuiTab {
         gridBagConstraints.insets = new Insets(5, 5, 5, 5);
         jpSOIHeader = new JPanel(new GridBagLayout());
         // TODO: fill with content and make better
+        jpSOIHeader.add(new JLabel(resourceMap.getString("espionageTab.personnelHeader")));
         jpSOIHeader.setPreferredSize(new Dimension(700, 20));
         jpSOIHeader.setBorder(RoundedLineBorder.createRoundedLineBorder());
         add(jpSOIHeader, gridBagConstraints);
@@ -261,7 +262,7 @@ public final class EspionageTab extends CampaignGuiTab {
             return;
         }
         Person selectedPerson = personModel.getPerson(jtEspionagePersonnel.convertRowIndexToModel(row));
-        jspEspionagePersonnel.setViewportView(new PersonViewPanel(selectedPerson, getCampaign(), getCampaignGui()));
+        // jspEspionagePersonnel.setViewportView(new PersonViewPanel(selectedPerson, getCampaign(), getCampaignGui()));
         // This odd code is to make sure that the scrollbar stays at the top
         // I can't just call it here, because it ends up getting reset somewhere later
         SwingUtilities.invokeLater(() -> jspEspionagePersonnel.getVerticalScrollBar().setValue(0));
