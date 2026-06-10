@@ -183,6 +183,11 @@ public class ForceHumanResources {
         return Collections.unmodifiableCollection(personnel.values());
     }
 
+    public Map<UUID, Person> getPersonnelMap() {
+        // Create shallow copy of the _map_, for concurrency safety.
+        return new HashMap<>(personnel);
+    }
+
     /**
      * Retrieves a list of personnel, excluding those whose status indicates they have left the unit.
      *

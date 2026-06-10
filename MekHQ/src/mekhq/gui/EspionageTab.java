@@ -207,11 +207,6 @@ public final class EspionageTab extends CampaignGuiTab {
         add(jspEspionageEvents, gridBagConstraints);
     }
 
-    @Override
-    public void disposeTab() {
-        super.disposeTab();
-    }
-
     private DefaultComboBoxModel<PersonnelFilter> createPersonGroupModel() {
         final DefaultComboBoxModel<PersonnelFilter> personGroupModel = new DefaultComboBoxModel<>();
         for (PersonnelFilter filter : MekHQ.getMHQOptions().getPersonnelFilterStyle().getFilters(false)) {
