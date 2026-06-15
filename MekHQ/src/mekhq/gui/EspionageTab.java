@@ -37,6 +37,8 @@ import megamek.client.ui.preferences.PreferencesNode;
 import megamek.client.ui.util.UIUtil;
 import megamek.common.event.Subscribe;
 import megamek.common.preference.IPreferenceChangeListener;
+import megamek.common.ui.EnhancedTabbedPane;
+import megamek.common.ui.FastJScrollPane;
 import megamek.logging.MMLogger;
 import mekhq.MekHQ;
 import mekhq.campaign.events.OptionsChangedEvent;
@@ -46,6 +48,7 @@ import mekhq.campaign.events.persons.PersonNewEvent;
 import mekhq.campaign.events.persons.PersonRemovedEvent;
 import mekhq.campaign.events.scenarios.ScenarioResolvedEvent;
 import mekhq.campaign.personnel.Person;
+import mekhq.gui.baseComponents.JScrollablePanel;
 import mekhq.gui.baseComponents.roundedComponents.RoundedLineBorder;
 import mekhq.gui.enums.MHQTabType;
 import mekhq.gui.enums.PersonnelFilter;
@@ -55,6 +58,7 @@ import mekhq.gui.model.PersonnelTableModel;
 import mekhq.gui.view.PersonViewPanel;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
@@ -95,7 +99,7 @@ public final class EspionageTab extends CampaignGuiTab {
     private TableRowSorter<PersonnelTableModel> personnelSorter;
 
     private final IPreferenceChangeListener scalingChangeListener = e -> changePersonnelView();
-    private final PersonnelTabView personnelTabView = PersonnelTabView.GRAPHIC;
+    private final PersonnelTabView personnelTabView = PersonnelTabView.GENERAL;
 
     // region Constructors
     public EspionageTab(CampaignGUI gui, String name) {
@@ -139,6 +143,7 @@ public final class EspionageTab extends CampaignGuiTab {
 
         // Personnel selection panel
         personModel = new PersonnelTableModel(getCampaign());
+        personModel.refreshData();
         jtEspionagePersonnel = new JTable(personModel);
         jtEspionagePersonnel.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         jtEspionagePersonnel.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
@@ -167,7 +172,7 @@ public final class EspionageTab extends CampaignGuiTab {
         gridBagConstraints.weightx = 0.9;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(5, 5, 0, 0);
-        jspEspionagePersonnel = new JScrollPane(jtEspionagePersonnel);
+        jspEspionagePersonnel = new FastJScrollPane(jtEspionagePersonnel);
         jspEspionagePersonnel.setLayout(new ScrollPaneLayout());
         jspEspionagePersonnel.setBorder(RoundedLineBorder.createRoundedLineBorder());
         jspEspionagePersonnel.setPreferredSize(new Dimension(360, 700));
@@ -206,6 +211,17 @@ public final class EspionageTab extends CampaignGuiTab {
         jspEspionageEvents.setBorder(RoundedLineBorder.createRoundedLineBorder());
         jspEspionageEvents.setPreferredSize(new Dimension(360, 320));
         add(jspEspionageEvents, gridBagConstraints);
+
+        // Set up listener to refresh on tab selection
+        getCampaignGui().getTabMain().addChangeListener(this::stateChanged);
+    }
+
+    public void stateChanged( ChangeEvent e ) {
+        if (e.getSource() instanceof EnhancedTabbedPane tabsPane) {
+            if ( tabsPane.getSelectedComponent() == this ) {
+                refreshPersonnelView();
+            }
+        }
     }
 
     private DefaultComboBoxModel<PersonnelFilter> createPersonGroupModel() {
@@ -243,9 +259,17 @@ public final class EspionageTab extends CampaignGuiTab {
      */
     @Override
     public void refreshAll() {
-        // Do stuff here
+        // Initial refresh
+        refreshPersonnelList();
+        refreshPersonnelView();
     }
 
+
+    @Override
+    public void activateTab() {
+        super.activateTab();
+        refreshPersonnelView();
+    }
     /**
      * Refreshes personnel table model.
      */
@@ -256,16 +280,6 @@ public final class EspionageTab extends CampaignGuiTab {
     }
 
     public void refreshPersonnelView() {
-        int row = jtEspionagePersonnel.getSelectedRow();
-        if (row < 0) {
-            jspEspionagePersonnel.setViewportView(null);
-            return;
-        }
-        Person selectedPerson = personModel.getPerson(jtEspionagePersonnel.convertRowIndexToModel(row));
-        // jspEspionagePersonnel.setViewportView(new PersonViewPanel(selectedPerson, getCampaign(), getCampaignGui()));
-        // This odd code is to make sure that the scrollbar stays at the top
-        // I can't just call it here, because it ends up getting reset somewhere later
-        SwingUtilities.invokeLater(() -> jspEspionagePersonnel.getVerticalScrollBar().setValue(0));
     }
 
     public List<Person> getSelectedPersons() {
