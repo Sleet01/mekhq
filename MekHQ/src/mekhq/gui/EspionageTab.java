@@ -32,13 +32,13 @@
  */
 package mekhq.gui;
 
+import megamek.client.ui.clientGUI.GUIPreferences;
 import megamek.client.ui.models.XTableColumnModel;
 import megamek.client.ui.preferences.PreferencesNode;
 import megamek.client.ui.util.UIUtil;
 import megamek.common.event.Subscribe;
 import megamek.common.preference.IPreferenceChangeListener;
 import megamek.common.ui.EnhancedTabbedPane;
-import megamek.common.ui.FastJScrollPane;
 import megamek.logging.MMLogger;
 import mekhq.MekHQ;
 import mekhq.campaign.events.OptionsChangedEvent;
@@ -48,7 +48,6 @@ import mekhq.campaign.events.persons.PersonNewEvent;
 import mekhq.campaign.events.persons.PersonRemovedEvent;
 import mekhq.campaign.events.scenarios.ScenarioResolvedEvent;
 import mekhq.campaign.personnel.Person;
-import mekhq.gui.baseComponents.JScrollablePanel;
 import mekhq.gui.baseComponents.roundedComponents.RoundedLineBorder;
 import mekhq.gui.baseComponents.tables.MHQTable;
 import mekhq.gui.enums.MHQTabType;
@@ -57,12 +56,9 @@ import mekhq.gui.enums.PersonnelTabView;
 import mekhq.gui.enums.PersonnelTableModelColumn;
 import mekhq.gui.model.LocationFilterItem;
 import mekhq.gui.model.PersonnelTableModel;
-import mekhq.gui.view.PersonViewPanel;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
@@ -110,6 +106,18 @@ public final class EspionageTab extends CampaignGuiTab {
     // endregion Constructors
 
     @Override
+    public void addNotify() {
+        super.addNotify();
+        GUIPreferences.getInstance().addPreferenceChangeListener(scalingChangeListener);
+    }
+
+    @Override
+    public void removeNotify() {
+        GUIPreferences.getInstance().removePreferenceChangeListener(scalingChangeListener);
+        super.removeNotify();
+    }
+
+    @Override
     public MHQTabType tabType() {
         return MHQTabType.ESPIONAGE;
     }
@@ -126,9 +134,8 @@ public final class EspionageTab extends CampaignGuiTab {
 
         setLayout(new GridBagLayout());
 
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
-
         // Header panel
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weightx = 0.1;
@@ -141,57 +148,42 @@ public final class EspionageTab extends CampaignGuiTab {
         jpSOIHeader.setBorder(RoundedLineBorder.createRoundedLineBorder());
         add(jpSOIHeader, gridBagConstraints);
 
-        // Personnel selection panel
+        // Personnel selection table
         jtEspionagePersonnel = new MHQTable<>(new PersonnelTableModel(getCampaign()));
         jtEspionagePersonnel.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        jtEspionagePersonnel.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        /**
-        XTableColumnModel personColumnModel = new XTableColumnModel();
-        jtEspionagePersonnel.setColumnModel(personColumnModel);
-        jtEspionagePersonnel.createDefaultColumnsFromModel();
-        personnelSorter = new TableRowSorter<>(personModel);
-        final ArrayList<RowSorter.SortKey> sortKeys = new ArrayList<>();
-        for (final PersonnelTableModelColumn column : PersonnelTableModelColumn.values()) {
-            final Comparator<?> comparator = column.getComparator(getCampaign());
-            personnelSorter.setComparator(column.ordinal(), comparator);
-            final SortOrder sortOrder = column.getDefaultSortOrder();
-            if (sortOrder != null) {
-                sortKeys.add(new RowSorter.SortKey(column.ordinal(), sortOrder));
-            }
-        }
-        personnelSorter.setSortKeys(sortKeys);
-        jtEspionagePersonnel.setRowSorter(personnelSorter);
-         */
-        jtEspionagePersonnel.setIntercellSpacing(new Dimension(0, 0));
-        jtEspionagePersonnel.setShowGrid(false);
-        changePersonnelView();
         jtEspionagePersonnel.getSelectionModel().addListSelectionListener(ev -> refreshPersonnelView());
+        jtEspionagePersonnel.setPreferredSize(new Dimension(0, 0));
 
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.weightx = 0.9;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(5, 5, 0, 0);
-        jspEspionagePersonnel = new FastJScrollPane(jtEspionagePersonnel);
-        jspEspionagePersonnel.setLayout(new ScrollPaneLayout());
-        jspEspionagePersonnel.setBorder(RoundedLineBorder.createRoundedLineBorder());
-        jspEspionagePersonnel.setPreferredSize(new Dimension(360, 700));
-        jspEspionagePersonnel.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jspEspionagePersonnel.setViewportView(null);
+        jspEspionagePersonnel = new JScrollPane(jtEspionagePersonnel);
+        jspEspionagePersonnel.setBorder(RoundedLineBorder.createRoundedLineBorder("Personnel Scroll Pane"));
+        jspEspionagePersonnel.setPreferredSize(new Dimension(640, 480));
         add(jspEspionagePersonnel, gridBagConstraints);
 
         // Radar Chart setup
+        /**
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.weightx = 0.45;
         gridBagConstraints.anchor = GridBagConstraints.CENTER;
         gridBagConstraints.insets = new Insets(0, 0, 0, 0);
+         */
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         jpEspionageChartPanel = new JPanel(new GridBagLayout());
         jpEspionageChartPanel.setBorder(RoundedLineBorder.createRoundedLineBorder());
-        jpEspionageChartPanel.setPreferredSize(new Dimension(360, 320));
+        // jpEspionageChartPanel.setPreferredSize(new Dimension(360, 320));
+        jpEspionageChartPanel.add(new JLabel("Chart Panel"));
         add(jpEspionageChartPanel, gridBagConstraints);
 
         // Event details panel
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.weightx = 0.9;
@@ -199,18 +191,23 @@ public final class EspionageTab extends CampaignGuiTab {
         gridBagConstraints.insets = new Insets(5, 0, 0, 5);
         jpDetailsPanel = new JPanel(new GridBagLayout());
         jpDetailsPanel.setBorder(RoundedLineBorder.createRoundedLineBorder());
-        jpDetailsPanel.setPreferredSize(new Dimension(360, 700));
+        // jpDetailsPanel.setPreferredSize(new Dimension(360, 700));
+        jpDetailsPanel.add(new JLabel("Event Details"));
         add(jpDetailsPanel, gridBagConstraints);
 
         // Events list
+        /**
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.weightx = 0.45;
         gridBagConstraints.anchor = GridBagConstraints.SOUTH;
         gridBagConstraints.insets = new Insets(0, 5, 0, 0);
+         */
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridy = 4;
         jspEspionageEvents = new JScrollPane();
         jspEspionageEvents.setLayout(new ScrollPaneLayout());
-        jspEspionageEvents.setBorder(RoundedLineBorder.createRoundedLineBorder());
+        jspEspionageEvents.setBorder(RoundedLineBorder.createRoundedLineBorder("Espionage Events Pane"));
         jspEspionageEvents.setPreferredSize(new Dimension(360, 320));
         add(jspEspionageEvents, gridBagConstraints);
 
@@ -222,8 +219,8 @@ public final class EspionageTab extends CampaignGuiTab {
     }
 
     private void updateUIScaling() {
-        jspEspionagePersonnel.setMinimumSize(new Dimension(UIUtil.scaleForGUI(PERSONNEL_VIEW_MIN_WIDTH, 0)));
-        jspEspionagePersonnel.setPreferredSize(new Dimension(UIUtil.scaleForGUI(PERSONNEL_VIEW_PREFERRED_WIDTH), 0));
+        // jspEspionagePersonnel.setMinimumSize(new Dimension(UIUtil.scaleForGUI(PERSONNEL_VIEW_MIN_WIDTH, 0)));
+        // jspEspionagePersonnel.setPreferredSize(new Dimension(UIUtil.scaleForGUI(PERSONNEL_VIEW_PREFERRED_WIDTH), 0));
     }
 
     public void stateChanged( ChangeEvent e ) {
@@ -278,6 +275,12 @@ public final class EspionageTab extends CampaignGuiTab {
      * Currently no-op, may need functionality.
      */
     public void filterPersonnel() {
+        jtEspionagePersonnel.setRowFilter(new RowFilter<>() {
+            @Override
+            public boolean include(Entry<? extends PersonnelTableModel, ? extends Integer> entry) {
+                return true;
+            }
+        });
     }
 
     /**
@@ -315,10 +318,10 @@ public final class EspionageTab extends CampaignGuiTab {
             return;
         }
         Person selectedPerson = getPersonnelTableModel().getRow(jtEspionagePersonnel.convertRowIndexToModel(row));
-        jspEspionagePersonnel.setViewportView(new PersonViewPanel(selectedPerson, getCampaign(), getCampaignGui()));
+        // jspEspionagePersonnel.setViewportView(new PersonViewPanel(selectedPerson, getCampaign(), getCampaignGui()));
         // This odd code is to make sure that the scrollbar stays at the top
         // I can't just call it here, because it ends up getting reset somewhere later
-        SwingUtilities.invokeLater(() -> jspEspionagePersonnel.getVerticalScrollBar().setValue(0));
+        // SwingUtilities.invokeLater(() -> jspEspionagePersonnel.getVerticalScrollBar().setValue(0));
     }
 
     public List<Person> getSelectedPersons() {
@@ -333,7 +336,6 @@ public final class EspionageTab extends CampaignGuiTab {
         }
         return selectedPersons;
     }
-
 
 
     private final ActionScheduler personnelListScheduler = new ActionScheduler(this::refreshPersonnelList);
@@ -372,7 +374,11 @@ public final class EspionageTab extends CampaignGuiTab {
     private void changePersonnelView() {
         final PersonnelTabView view = PersonnelTabView.GENERAL;
         final XTableColumnModel columnModel = (XTableColumnModel) getPersonnelTable().getColumnModel();
+        Set<PersonnelTableModelColumn> visibleColumns = view.getVisibleColumns(getCampaign().getCampaignOptions());
+
+        jtEspionagePersonnel.setView(visibleColumns);
         getPersonnelTable().setRowHeight(UIUtil.scaleForGUI(15));
+        filterPersonnel();
     }
 
 }
