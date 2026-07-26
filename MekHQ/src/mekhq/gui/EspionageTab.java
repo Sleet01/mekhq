@@ -153,8 +153,8 @@ public final class EspionageTab extends CampaignGuiTab {
         // Personnel selection table
         jtEspionagePersonnel = new MHQTable<>(new PersonnelTableModel(getCampaign()));
         jtEspionagePersonnel.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        jtEspionagePersonnel.setPreferredSize(new Dimension(0, 480));
-        jtEspionagePersonnel.setPreferredScrollableViewportSize(jtEspionagePersonnel.getPreferredSize());
+        // jtEspionagePersonnel.setPreferredSize(new Dimension(0, 480));
+        // jtEspionagePersonnel.setPreferredScrollableViewportSize(jtEspionagePersonnel.getPreferredSize());
 
 
         gridBagConstraints = new GridBagConstraints();
@@ -165,7 +165,7 @@ public final class EspionageTab extends CampaignGuiTab {
         gridBagConstraints.insets = new Insets(5, 5, 0, 0);
         jspEspionagePersonnel = new JScrollPane(jtEspionagePersonnel);
         jspEspionagePersonnel.setBorder(RoundedLineBorder.createRoundedLineBorder("Personnel Scroll Pane"));
-        jspEspionagePersonnel.setPreferredSize(new Dimension(640, 480));
+        jspEspionagePersonnel.setPreferredSize(new Dimension(720, 488));
         add(jspEspionagePersonnel, gridBagConstraints);
 
         // Radar Chart setup
