@@ -33,7 +33,6 @@
 package mekhq.gui;
 
 import megamek.client.ui.clientGUI.GUIPreferences;
-import megamek.client.ui.models.XTableColumnModel;
 import megamek.client.ui.preferences.PreferencesNode;
 import megamek.client.ui.util.UIUtil;
 import megamek.common.event.Subscribe;
@@ -41,6 +40,8 @@ import megamek.common.preference.IPreferenceChangeListener;
 import megamek.common.ui.EnhancedTabbedPane;
 import megamek.logging.MMLogger;
 import mekhq.MekHQ;
+import mekhq.campaign.espionage.EspionageManager;
+import mekhq.campaign.espionage.SphereOfInfluence;
 import mekhq.campaign.events.OptionsChangedEvent;
 import mekhq.campaign.events.persons.PersonChangedEvent;
 import mekhq.campaign.events.persons.PersonLogEvent;
@@ -52,7 +53,6 @@ import mekhq.gui.baseComponents.roundedComponents.RoundedLineBorder;
 import mekhq.gui.baseComponents.tables.MHQTable;
 import mekhq.gui.enums.MHQTabType;
 import mekhq.gui.enums.PersonnelFilter;
-import mekhq.gui.enums.PersonnelTabView;
 import mekhq.gui.enums.PersonnelTableModelColumn;
 import mekhq.gui.model.LocationFilterItem;
 import mekhq.gui.model.PersonnelTableModel;
@@ -66,7 +66,8 @@ import java.util.*;
 import static mekhq.gui.enums.PersonnelTableModelColumn.*;
 
 /**
- * Tile for filling
+ * Tile will eventually be used to display personnel currently assigned to the selected Sphere of Influence
+ * This will allow customized display of Espionage-relevant information in a compact way.
  */
 class EspionagePersonTile extends JPanel {
 
@@ -93,6 +94,7 @@ public final class EspionageTab extends CampaignGuiTab {
     private JScrollPane jspEspionageEvents;
     private JPanel jpEspionageChartPanel;
     private JPanel jpDetailsPanel;
+    private EspionageManager espionageManager;
 
     // keep
     private MHQTable<Person, PersonnelTableModelColumn, PersonnelTableModel> jtEspionagePersonnel;
@@ -104,6 +106,7 @@ public final class EspionageTab extends CampaignGuiTab {
         super(gui, name);
         MekHQ.registerHandler(this);
         setUserPreferences();
+        this.espionageManager = gui.getCampaign().getEspionageManager();
     }
     // endregion Constructors
 
@@ -137,6 +140,9 @@ public final class EspionageTab extends CampaignGuiTab {
         setLayout(new GridBagLayout());
 
         // Header panel
+        // This is envisioned to contain the SOI selection and display elements, e.g.
+        // <| "Port Moseby Garrison Contract SOI" |>
+        // as well as a tooltip box
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -150,12 +156,9 @@ public final class EspionageTab extends CampaignGuiTab {
         jpSOIHeader.setBorder(RoundedLineBorder.createRoundedLineBorder());
         add(jpSOIHeader, gridBagConstraints);
 
-        // Personnel selection table
+        // Personnel selection table and scrolling pane
         jtEspionagePersonnel = new MHQTable<>(new PersonnelTableModel(getCampaign()));
         jtEspionagePersonnel.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        // jtEspionagePersonnel.setPreferredSize(new Dimension(0, 480));
-        // jtEspionagePersonnel.setPreferredScrollableViewportSize(jtEspionagePersonnel.getPreferredSize());
-
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -169,19 +172,14 @@ public final class EspionageTab extends CampaignGuiTab {
         add(jspEspionagePersonnel, gridBagConstraints);
 
         // Radar Chart setup
-        /**
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.weightx = 0.45;
         gridBagConstraints.anchor = GridBagConstraints.CENTER;
         gridBagConstraints.insets = new Insets(0, 0, 0, 0);
-         */
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         jpEspionageChartPanel = new JPanel(new GridBagLayout());
         jpEspionageChartPanel.setBorder(RoundedLineBorder.createRoundedLineBorder());
-        // jpEspionageChartPanel.setPreferredSize(new Dimension(360, 320));
+        jpEspionageChartPanel.setPreferredSize(new Dimension(360, 320));
         jpEspionageChartPanel.add(new JLabel("Chart Panel"));
         add(jpEspionageChartPanel, gridBagConstraints);
 
@@ -194,18 +192,11 @@ public final class EspionageTab extends CampaignGuiTab {
         gridBagConstraints.insets = new Insets(5, 0, 0, 5);
         jpDetailsPanel = new JPanel(new GridBagLayout());
         jpDetailsPanel.setBorder(RoundedLineBorder.createRoundedLineBorder());
-        // jpDetailsPanel.setPreferredSize(new Dimension(360, 700));
+        jpDetailsPanel.setPreferredSize(new Dimension(360, 700));
         jpDetailsPanel.add(new JLabel("Event Details"));
         add(jpDetailsPanel, gridBagConstraints);
 
         // Events list
-        /**
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.weightx = 0.45;
-        gridBagConstraints.anchor = GridBagConstraints.SOUTH;
-        gridBagConstraints.insets = new Insets(0, 5, 0, 0);
-         */
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridy = 4;
         jspEspionageEvents = new JScrollPane();
@@ -223,8 +214,6 @@ public final class EspionageTab extends CampaignGuiTab {
 
     private void updateUIScaling() {
         changePersonnelView();
-        // jspEspionagePersonnel.setMinimumSize(new Dimension(UIUtil.scaleForGUI(PERSONNEL_VIEW_MIN_WIDTH, 0)));
-        // jspEspionagePersonnel.setPreferredSize(new Dimension(UIUtil.scaleForGUI(PERSONNEL_VIEW_PREFERRED_WIDTH), 0));
     }
 
     public void stateChanged( ChangeEvent e ) {
@@ -343,6 +332,9 @@ public final class EspionageTab extends CampaignGuiTab {
         return selectedPersons;
     }
 
+    private void addPersonnelToSOI(List<Person> people, SphereOfInfluence SOI) {
+
+    }
 
     private final ActionScheduler personnelListScheduler = new ActionScheduler(this::refreshPersonnelList);
 

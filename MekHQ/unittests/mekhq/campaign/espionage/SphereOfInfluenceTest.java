@@ -46,7 +46,7 @@ class SphereOfInfluenceTest {
         // SOI setup
         SphereOfInfluence soi = new SphereOfInfluence();
         soi.setSoiId(soiId);
-        soi.setMissionId(missionId);
+        soi.setContractId(missionId);
         soi.setTitle(title);
         soi.setDescription(description);
 
@@ -100,7 +100,7 @@ class SphereOfInfluenceTest {
 
         // Test values
         assertEquals(soiId, deserialized.getSoiId());
-        assertEquals(missionId, deserialized.getMissionId());
+        assertEquals(missionId, deserialized.getContractId());
         assertEquals(title, deserialized.getTitle());
         assertEquals(description, deserialized.getDescription());
 

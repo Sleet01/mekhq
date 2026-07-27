@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -80,9 +81,11 @@ class IntelEventTest {
 
         // Configure EspionageManager,
         int soiId = 1;
+        UUID contractId = UUID.randomUUID();
         EspionageManager manager = EspionageManager.getInstance();
         manager.setCampaign(campaign);
-        SphereOfInfluence sphereOfInfluence = new SphereOfInfluence(soiId, 1, "Test SOI", "Test Sphere Of Influence",
+        SphereOfInfluence sphereOfInfluence = new SphereOfInfluence(soiId, contractId, "Test SOI", "Test Sphere Of " +
+                                                                                                    "Influence",
               new HashMap<>(), new ArrayList<>(), new HashMap<>());
 
         IntelRating intelRating = new IntelRating(4);
