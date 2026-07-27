@@ -39,7 +39,7 @@ import megamek.common.annotations.Nullable;
 import megamek.logging.MMLogger;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.espionage.IntelEvent.EventState;
-import mekhq.campaign.mission.Mission;
+import mekhq.campaign.mission.contract.AbstractContract;
 import mekhq.utilities.MHQXMLUtility;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -51,14 +51,15 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.UUID;
 
 public class SphereOfInfluence {
     private static final MMLogger LOGGER = MMLogger.create(SphereOfInfluence.class);
 
-    public static final int UNASSIGNED_MISSION = -1;
+    public static final UUID UNASSIGNED_CONTRACT = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
     private int soiId;
-    private int missionId;
+    private UUID contractId;
     private String title;
     private String description;
 
@@ -68,15 +69,15 @@ public class SphereOfInfluence {
     private HashMap<Integer, ArrayList<IntelEvent>> eventsMap;
 
     // IntelItems are more free-floating.
-    private ArrayList<IntelItem> items;
+    final private ArrayList<IntelItem> items;
 
     public SphereOfInfluence() {
-         this(0, UNASSIGNED_MISSION, "", "", new HashMap<>(), new ArrayList<>(), new HashMap<>());
+         this(0, UNASSIGNED_CONTRACT, "", "", new HashMap<>(), new ArrayList<>(), new HashMap<>());
     }
 
     public SphereOfInfluence(
           int soiId,
-          int missionId,
+          UUID contractId,
           String title,
           String description,
           HashMap<Integer, HashMap<Integer, IntelRating>> actorsRatingsMap,
@@ -86,7 +87,7 @@ public class SphereOfInfluence {
         this.soiId = soiId;
         this.title = title;
         this.description = description;
-        this.missionId = missionId;
+        this.contractId = contractId;
         this.actorsRatingsMap = actorsRatingsMap;
         this.items = items;
         this.eventsMap = eventsMap;
@@ -100,12 +101,12 @@ public class SphereOfInfluence {
         this.soiId = soiId;
     }
 
-    public int getMissionId() {
-        return missionId;
+    public UUID getContractId() {
+        return contractId;
     }
 
-    public void setMissionId(int missionId) {
-        this.missionId = missionId;
+    public void setContractId(UUID contractId) {
+        this.contractId = contractId;
     }
 
     public String getTitle() {
@@ -225,25 +226,22 @@ public class SphereOfInfluence {
     }
 
     /**
-     * Call once after instantiating.
-     * Create entries for every entity involved in this Mission:
-     * 1. Player
-     * 2. Opponent force
+     * Call once after instantiating. Create entries for every entity involved in this Mission: 1. Player 2. Opponent
+     * force
+     * <p>
+     * Eventually these will be more detailed, and also include: 3. Opponent faction (may provide bonuses) 4. Player
+     * employer 5. ???
+     * <p>
+     * Initially we will only provide events for Player vs Opponent force, although some may be written as, "prevent
+     * Opponent from X" as if the opfor is also generating events.
      *
-     * Eventually these will be more detailed, and also include:
-     * 3. Opponent faction (may provide bonuses)
-     * 4. Player employer
-     * 5. ???
-     *
-     * Initially we will only provide events for Player vs Opponent force, although
-     * some may be written as, "prevent Opponent from X" as if the opfor is also generating events.
-     * @param campaign  The current campaign; this may be refactored in the near future.
-     * @param mission   Let the GUI decide which Mission to look at
-     * @param botLevel  For the time being, set a static level for the bot
+     * @param campaign The current campaign; this may be refactored in the near future.
+     * @param contract Let the GUI decide which Mission to look at
+     * @param botLevel For the time being, set a static level for the bot
      */
-    public void populate(Campaign campaign, Mission mission, int botLevel) {
+    public void populate(Campaign campaign, AbstractContract contract, int botLevel) {
         // Do nothing if the campaign and/or mission is not set
-        if (campaign == null || mission == null) {
+        if (campaign == null || contract == null) {
             return;
         }
         Player player = campaign.getPlayer();
@@ -255,7 +253,7 @@ public class SphereOfInfluence {
         }
 
         // Set missionId
-        missionId = mission.getId();
+        contractId = contract.getId();
 
         // Placeholder values
         int botId = playerId + 1;
@@ -376,7 +374,7 @@ public class SphereOfInfluence {
 
     protected int writeToXMLBegin(Campaign campaign, final PrintWriter pw, int indent) {
         MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "sphereOfInfluence", "soiId", soiId, "type", getClass());
-        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "missionId", missionId);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "missionId", contractId);
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "title", title);
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "description", description);
 
@@ -431,7 +429,7 @@ public class SphereOfInfluence {
             Node item = childNodes.item(x);
             try {
                 if (item.getNodeName().equalsIgnoreCase("missionId")) {
-                    missionId = Integer.parseInt(item.getTextContent());
+                    contractId = UUID.fromString(item.getTextContent());
                 } else if (item.getNodeName().equalsIgnoreCase("title")) {
                     title = item.getTextContent();
                 } else if (item.getNodeName().equalsIgnoreCase("description")) {

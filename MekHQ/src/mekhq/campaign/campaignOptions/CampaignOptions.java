@@ -668,6 +668,10 @@ public class CampaignOptions {
         return get(CampaignOption.TRACK_FACTION_STANDING) && get(CampaignOption.USE_FACTION_STANDING_SUPPORT_POINTS);
     }
 
+    public boolean isUseEspionageSystem() {
+        return get(CampaignOption.USE_ESPIONAGE_SYSTEM);
+    }
+
     public void setUseEspionageSystem(boolean useEspionageSystem) {
         set(CampaignOption.USE_ESPIONAGE_SYSTEM, useEspionageSystem);
     }

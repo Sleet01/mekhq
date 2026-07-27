@@ -86,6 +86,7 @@ import mekhq.campaign.espionage.SphereOfInfluence;
 import mekhq.campaign.force.UnitStub;
 import mekhq.campaign.mission.scenarios.AtBDynamicScenario;
 import mekhq.campaign.mission.scenarios.AtBScenario;
+import mekhq.campaign.mission.scenarios.BotForce;
 import mekhq.campaign.mission.scenarios.BotForceStub;
 import mekhq.campaign.mission.scenarios.Loot;
 import mekhq.campaign.mission.scenarios.Scenario;
@@ -481,6 +482,7 @@ public class AtBScenarioViewPanel extends JScrollablePanel {
         boolean isTrueBlindDrop = options.getOption(BASE_REAL_BLIND_DROP).booleanValue();
         boolean useEspionage = campaignOptions.isUseEspionageSystem();
         boolean isCurrent = curScenario.getStatus().isCurrent();
+        boolean refusedEngagement = curScenario.getStatus().isRefusedEngagement();
 
         // Get SOI for this scenario, assuming AtB scenario
         EspionageManager espionageManager = (useEspionage) ? EspionageManager.getInstance() : null;
@@ -496,27 +498,32 @@ public class AtBScenarioViewPanel extends JScrollablePanel {
             List<String> allEntries = botStub.entityList();
             DefaultMutableTreeNode top = new DefaultMutableTreeNode(stubs.get(i).name());
 
-            if (useEspionage && (team != playerTeam)) {
+            // Only hide info on no-player teams from "current", or upcoming, scenarios - or refused engagements.
+            // Do not hide resolved scenarios; presume those forces are now known.
+            if (useEspionage && (team != playerTeam) && (isCurrent || refusedEngagement)) {
                 // TODO: replace with real IntelRating access
                 // Espionage-style information obscuring, but only for enemies
                 // We _should_ have a rating for every foe in this scenario, which means every enemy bot _team_
                 IntelRating rating = (soi != null) ? soi.getActorRatingForFoe(playerTeam, team) : new IntelRating(5);
                 for (String entityString : allEntries) {
+                    // Try to get entities for the listed enemy force, and obscure them.
                     int unitIndex = allEntries.indexOf(entityString);
-                    Entity entity = curScenario.getBotForce(i).getFullEntityList(curCampaign).get(unitIndex);
-                    ObscuredEntity obscuredEntity = new ObscuredEntity(
-                          entity,
-                          rating.getForcesIntel().getLevel(),
-                          rating.getPositionIntel().getLevel(),
-                          rating.getLogisticsIntel().getLevel(),
-                          rating.getPersonnelIntel().getLevel()
-                    );
+                    BotForce botForce = (curScenario.getBotForces().isEmpty()) ? null : curScenario.getBotForce(i);
+                    if (botForce != null) {
+                        Entity entity = botForce.getFullEntityList(curCampaign).get(unitIndex);
+                        ObscuredEntity obscuredEntity = new ObscuredEntity(
+                              entity,
+                              rating.getForcesIntel().getLevel(),
+                              rating.getPositionIntel().getLevel(),
+                              rating.getLogisticsIntel().getLevel(),
+                              rating.getPersonnelIntel().getLevel()
+                        );
 
-                    // Also add known entities to ForcesIntel here?
-                    String label = generateEntityStub(obscuredEntity);
-                    top.add(new DefaultMutableTreeNode(label));
+                        // Also add known entities to ForcesIntel here?
+                        String label = generateEntityStub(obscuredEntity);
+                        top.add(new DefaultMutableTreeNode(label));
+                    }
                 }
-
             } else if (!(isTrueBlindDrop && (team != playerTeam))) {
                 // Blind Drop hiding
                 boolean hideInformation = isCurrent && isBlindDrop && (team != playerTeam);
@@ -617,65 +624,6 @@ public class AtBScenarioViewPanel extends JScrollablePanel {
             panStats.add(tree, gridBagConstraints);
             if (scenario.getStatus().isCurrent()) {
                 tree.addMouseListener(new TreeMouseAdapter(tree, i));
-            }
-        }
-
-        boolean isBlindDrop = campaign.getGameOptions().getOption(BASE_BLIND_DROP).booleanValue();
-        boolean isTrueBlindDrop = campaign.getGameOptions().getOption(BASE_REAL_BLIND_DROP).booleanValue();
-        boolean isCurrent = scenario.getStatus().isCurrent();
-        for (int botIndex = 0; botIndex < botStubs.size(); botIndex++) {
-            BotForceStub botStub = botStubs.get(botIndex);
-            if (botStub == null) {
-                continue;
-            }
-
-            int team = botStub.team();
-            List<String> allEntries = botStub.entityList();
-            DefaultMutableTreeNode top = new DefaultMutableTreeNode(botStubs.get(botIndex).name());
-
-            if (!(isTrueBlindDrop && (team != 1))) {
-                boolean hideInformation = isCurrent && isBlindDrop && (team != 1);
-                for (int unitIndex = 0; unitIndex < allEntries.size(); unitIndex++) {
-                    String entityString = allEntries.get(unitIndex);
-                    if (hideInformation) {
-                        Entity entity = scenario.getBotForce(botIndex).getFullEntityList(campaign).get(unitIndex);
-
-                        if (entity == null) {
-                            top.add(new DefaultMutableTreeNode("???"));
-                            continue;
-                        }
-
-                        String weightClass = entity.getWeightClassName();
-                        long entityType = entity.getEntityType();
-                        String unitType = getEntityMajorTypeName(entityType);
-
-                        top.add(new DefaultMutableTreeNode(weightClass + ' ' + unitType));
-                    } else {
-                        top.add(new DefaultMutableTreeNode(entityString));
-                    }
-                }
-            }
-
-            JTree tree = new JTree(top) {
-                @Override
-                public Dimension getMinimumSize() {
-                    return super.getPreferredSize();
-                }
-            };
-            tree.collapsePath(new TreePath(top));
-            tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = row++;
-            gridBagConstraints.gridwidth = 3;
-            gridBagConstraints.gridheight = 1;
-            gridBagConstraints.weightx = 1.0;
-            gridBagConstraints.weighty = 0.0;
-            gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-            gridBagConstraints.fill = GridBagConstraints.BOTH;
-            gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-            panStats.add(tree, gridBagConstraints);
-            if (scenario.getStatus().isCurrent()) {
-                tree.addMouseListener(new TreeMouseAdapter(tree, botIndex));
             }
         }
 
