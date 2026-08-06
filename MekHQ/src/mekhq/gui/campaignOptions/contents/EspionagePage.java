@@ -32,30 +32,20 @@
  */
 package mekhq.gui.campaignOptions.contents;
 
-import static mekhq.gui.campaignOptions.CampaignOptionsUtilities.MILESTONE_BEFORE_METADATA;
-import static mekhq.gui.campaignOptions.CampaignOptionsUtilities.createParentPanel;
 import static mekhq.gui.campaignOptions.CampaignOptionsUtilities.createTipPanelUpdater;
 import static mekhq.gui.campaignOptions.CampaignOptionsUtilities.getImageDirectory;
-import static mekhq.gui.campaignOptions.CampaignOptionsUtilities.getMetadata;
 
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSpinner;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import mekhq.gui.campaignOptions.CampaignOptionFlag;
+import megamek.client.ui.settings.SettingsFormPanel;
+import megamek.common.autoResolve.acar.Settings;
 import mekhq.gui.campaignOptions.components.CampaignOptionsCheckBox;
-import mekhq.gui.campaignOptions.components.CampaignOptionsFormPanel;
-import mekhq.gui.campaignOptions.components.CampaignOptionsGridBagConstraints;
-import mekhq.gui.campaignOptions.components.CampaignOptionsHeaderPanel;
-import mekhq.gui.campaignOptions.components.CampaignOptionsLabel;
 import mekhq.gui.campaignOptions.components.CampaignOptionsPagePanel;
-import mekhq.gui.campaignOptions.components.CampaignOptionsSpinner;
-import mekhq.gui.campaignOptions.components.CampaignOptionsStandardPanel;
+import mekhq.gui.campaignOptions.components.CampaignOptionsHeaderPanel;
 
-import java.awt.GridBagConstraints;
 
 /**
  * The {@code FactionStandingPage} class builds and manages the Espionage leaf page of the Campaign Options
@@ -69,8 +59,8 @@ import java.awt.GridBagConstraints;
  * {@link #writeToModel(SystemsOptionsModel)} are no-ops.</p>
  */
 class EspionagePage {
-    private static final int FORM_LABEL_COLUMN_WIDTH = CampaignOptionsFormPanel.DEFAULT_LABEL_WIDTH;
-    private static final int FORM_CONTROL_COLUMN_WIDTH = CampaignOptionsFormPanel.DEFAULT_CONTROL_WIDTH;
+    private static final int FORM_LABEL_COLUMN_WIDTH = SettingsFormPanel.DEFAULT_LABEL_WIDTH;
+    private static final int FORM_CONTROL_COLUMN_WIDTH = SettingsFormPanel.DEFAULT_CONTROL_WIDTH;
     private static final int CHECKBOX_GRID_COLUMNS = 2;
 
     private JCheckBox chkEnableEspionageSystem;
@@ -138,7 +128,7 @@ class EspionagePage {
         chkEnableEspionageSystem.addMouseListener(createTipPanelUpdater("EnableEspionageSystem"));
 
         // Layout the Panel
-        final CampaignOptionsFormPanel panel = new CampaignOptionsFormPanel("EspionageGeneralOptionsPanel",
+        final SettingsFormPanel panel = new SettingsFormPanel("EspionageGeneralOptionsPanel",
               FORM_LABEL_COLUMN_WIDTH,
               FORM_CONTROL_COLUMN_WIDTH);
         panel.addCheckBoxGrid(CHECKBOX_GRID_COLUMNS,
