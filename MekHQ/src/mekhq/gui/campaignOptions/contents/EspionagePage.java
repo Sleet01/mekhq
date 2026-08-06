@@ -32,6 +32,7 @@
  */
 package mekhq.gui.campaignOptions.contents;
 
+import static mekhq.MHQConstants.ESPIONAGE_IMAGE_DIRECTORY;
 import static mekhq.gui.campaignOptions.CampaignOptionsUtilities.createTipPanelUpdater;
 import static mekhq.gui.campaignOptions.CampaignOptionsUtilities.getImageDirectory;
 
@@ -79,7 +80,7 @@ class EspionagePage {
      */
     @Nonnull JPanel createPanel(@Nullable SystemsOptionsModel model) {
         // Header
-        String imageAddress = getImageDirectory() + "logo_espionage_symbol.png";
+        String imageAddress = ESPIONAGE_IMAGE_DIRECTORY + "logo_espionage_symbol.png";
         espionageHeader = new CampaignOptionsHeaderPanel("EspionageTab", imageAddress);
 
         // Contents
@@ -95,19 +96,6 @@ class EspionagePage {
                      "lblEspionagePanel.summary",
                      pnlEspionageGeneralOptions)
                .build();
-
-        /** (may need rewriting or deletion)
-        final GridBagConstraints layoutParent = new CampaignOptionsGridBagConstraints(panel);
-
-        layoutParent.gridwidth = 5;
-        layoutParent.gridx = 0;
-        layoutParent.gridy = 0;
-        panel.add(espionageHeader, layoutParent);
-
-        layoutParent.gridy++;
-        layoutParent.gridwidth = 1;
-        panel.add(pnlEspionageGeneralOptions, layoutParent);
-         */
 
         created = true;
         readFromModel(model);
