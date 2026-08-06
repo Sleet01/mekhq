@@ -394,6 +394,10 @@ public final class MHQConstants extends SuiteConstants {
     public static final String SCENARIO_MODIFIER_TRAINEES_GROUND = "AlliedTraineesGround.json";
     // endregion StratCon
 
+    // region Espionage
+    public static final String ESPIONAGE_IMAGE_DIRECTORY = "data/images/espionage/";
+    // endregion Espionage
+
     // region StoryArcs
     public static final String STORY_ARC_DIRECTORY = "data/storyarcs/";
     public static final String USER_STORY_ARC_DIRECTORY = "userdata/storyarcs/";
