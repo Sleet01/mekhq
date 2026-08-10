@@ -49,7 +49,7 @@ import mekhq.gui.campaignOptions.components.CampaignOptionsHeaderPanel;
 
 
 /**
- * The {@code FactionStandingPage} class builds and manages the Espionage leaf page of the Campaign Options
+ * The {@code EspionagePage} class builds and manages the Espionage leaf page of the Campaign Options
  * dialog. It owns the widgets for Espionage configuration - the tracking toggles, the regard multiplier, and the
  * per-effect modifier toggles - and synchronises them with a shared {@link SystemsOptionsModel}.
  *

@@ -38,6 +38,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.campaignOptions.CampaignOptions;
+import mekhq.campaign.espionage.EspionageManager;
 
 /**
  * The {@code SystemsPages} class coordinates the Systems section of the MekHQ Campaign Options dialog. It owns the
@@ -166,6 +167,21 @@ public class SystemsPages {
             campaign.getPlayerForce().setCamOpsCrimeRating(0);
             campaign.getPlayerForce().setCampOpsCrimePirateModifier(0);
             model.resetCriminalRecord = false;
+        }
+
+        // Did the use of Espionage system change?
+        // Either create and populate, or kill and clear, espionage tracking
+        if (model.useEspionageSystem != options.isUseEspionageSystem()) {
+            if (model.useEspionageSystem) {
+                // We have activated the Espionage system; make sure everything gets populated!
+                // Clear and reconstitute the Espionage Manager instance, then assign it to this campaign
+                EspionageManager.clearInstance();
+                EspionageManager espionageManager = EspionageManager.getInstance();
+                espionageManager.setCampaign(campaign);
+                espionageManager.populateSpheresOfInfluence(campaign, false);
+            } else {
+                EspionageManager.clearInstance();
+            }
         }
 
         model.applyTo(options);

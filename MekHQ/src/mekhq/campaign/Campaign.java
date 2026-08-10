@@ -137,6 +137,7 @@ import mekhq.campaign.enums.CampaignTransportType;
 import mekhq.campaign.enums.DailyReportType;
 import mekhq.campaign.enums.DragoonRating;
 import mekhq.campaign.espionage.EspionageManager;
+import mekhq.campaign.espionage.SphereOfInfluence;
 import mekhq.campaign.events.*;
 import mekhq.campaign.events.loans.LoanNewEvent;
 import mekhq.campaign.events.loans.LoanPaidEvent;
@@ -3753,6 +3754,15 @@ public class Campaign implements ITechManager {
             }
         }
         MHQXMLUtility.writeSimpleXMLCloseTag(writer, --indent, "kills");
+
+        // Write every SphereOfInfluence to the save, as the EspionageManager is stateless (mostly)
+        MHQXMLUtility.writeSimpleXMLOpenTag(writer, indent++, "espionage");
+        if (EspionageManager.getInstance(this) != null) {
+            for (SphereOfInfluence soi: EspionageManager.getInstance(this).getSpheres()) {
+                soi.writeToXML(this, writer, indent);
+            }
+        }
+
         MHQXMLUtility.writeSimpleXMLOpenTag(writer, indent++, "skillTypes");
         for (final String skillName : SkillType.skillList) {
             final SkillType type = getType(skillName);
@@ -6184,6 +6194,9 @@ public class Campaign implements ITechManager {
     }
 
     public EspionageManager getEspionageManager() {
-        return EspionageManager.getInstance(this);
+        if (campaignOptions != null && campaignOptions.isUseEspionageSystem()) {
+            return EspionageManager.getInstance(this);
+        }
+        return null;
     }
 }

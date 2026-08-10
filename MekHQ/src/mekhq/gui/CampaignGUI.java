@@ -2018,10 +2018,18 @@ public class CampaignGUI extends JPanel {
      */
     @Subscribe
     public void handle(final OptionsChangedEvent optionsChangedEvent) {
+        // StratCon tab
         if (!getCampaign().getCampaignOptions().isUseStratCon() && getStratConTab().isPresent()) {
             deactivateTab(stratConTab);
         } else if (getCampaign().getCampaignOptions().isUseStratCon() && getStratConTab().isEmpty()) {
             activateTab(stratConTab);
+        }
+
+        // Espionage tab
+        if (getCampaign().getCampaignOptions().isUseEspionageSystem()) {
+            activateTab(espionageTab);
+        } else {
+            deactivateTab(espionageTab);
         }
 
         // Update blob crew label visibility

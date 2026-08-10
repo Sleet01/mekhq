@@ -98,6 +98,8 @@ import mekhq.campaign.campaignOptions.CampaignOption;
 import mekhq.campaign.campaignOptions.CampaignOptions;
 import mekhq.campaign.campaignOptions.CampaignOptionsUnmarshaller;
 import mekhq.campaign.enums.CampaignTransportType;
+import mekhq.campaign.espionage.EspionageManager;
+import mekhq.campaign.espionage.SphereOfInfluence;
 import mekhq.campaign.finances.Finances;
 import mekhq.campaign.force.CombatTeam;
 import mekhq.campaign.force.Detachment;
@@ -1610,6 +1612,38 @@ public record CampaignXmlParser(InputStream is, MekHQ app) {
         LOGGER.info("Load Kill Nodes Complete!");
     }
 
+    private static void processEspionageNodes(Campaign retVal, Node wn, Version version) {
+        LOGGER.info("Loading Espionage Nodes from XML...");
+        CampaignOptions options = retVal.getCampaignOptions();
+        if (options != null && options.isUseEspionageSystem()) {
+            EspionageManager espionage = EspionageManager.getInstance(retVal);
+
+            NodeList wList = wn.getChildNodes();
+
+            // Okay, lets iterate through the children, eh?
+            for (int x = 0; x < wList.getLength(); x++) {
+                Node wn2 = wList.item(x);
+
+                // If it's not an element node, we ignore it.
+                if (wn2.getNodeType() != Node.ELEMENT_NODE) {
+                    continue;
+                } else if (!wn2.getNodeName().equalsIgnoreCase("sphereOfInfluence")) {
+                    // Error condition of sorts!
+                    // Errr, what should we do here?
+                    LOGGER.error("Unknown node type not loaded in Espionage nodes: {}", wn2.getNodeName());
+                    continue;
+                }
+
+                SphereOfInfluence soi = SphereOfInfluence.generateInstanceFromXML(wn2, retVal, version);
+                if (soi != null) {
+                    espionage.addSphereOfInfluence(soi);
+                }
+            }
+        }
+
+        LOGGER.info("Load Espionage Nodes Complete!");
+    }
+
     /**
      * A legacy integer mission reference (from a kill, a combat team, etc.) pending re-hook to the converted contract's
      * new {@link UUID}. {@code apply} writes the resolved id back onto the owning object.
@@ -2319,6 +2353,8 @@ public record CampaignXmlParser(InputStream is, MekHQ app) {
                     processStoryArcNodes(campaign, workingNode, version);
                 } else if (nodeName.equalsIgnoreCase("kills")) {
                     processKillNodes(campaign, workingNode, version, pendingMissionRelinks);
+                } else if (nodeName.equalsIgnoreCase("espionage")) {
+                    processEspionageNodes(campaign, workingNode, version);
                 } else if (nodeName.equalsIgnoreCase("shoppingList")) {
                     ForceShoppingList sl = ForceShoppingList.generateInstanceFromXML(workingNode, campaign, version);
                     campaign.getPlayerForce().setShoppingList(sl);

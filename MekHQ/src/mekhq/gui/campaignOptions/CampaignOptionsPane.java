@@ -386,7 +386,6 @@ public class CampaignOptionsPane extends JPanel {
         registerParentRoute("operations.rulesets", "strategicOperationsCategory", "rulesetsCategory");
         registerDirectRoute("operations.rulesets.stratcon", this::createOperationsStratConPage,
               "strategicOperationsCategory", "rulesetsCategory", "stratConGeneralPage");
-
     }
 
     private void ensureCategoryLoaded(String topLevelResourceName) {
