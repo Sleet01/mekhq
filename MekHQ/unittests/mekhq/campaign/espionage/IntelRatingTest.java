@@ -5,7 +5,9 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.espionage.inteltypes.BasicIntel;
 import mekhq.campaign.espionage.inteltypes.CounterIntel;
 import mekhq.campaign.espionage.inteltypes.FinancialIntel;
+import mekhq.campaign.force.PlayerForce;
 import mekhq.campaign.personnel.Person;
+import mekhq.campaign.personnel.ranks.RankSystem;
 import mekhq.utilities.MHQXMLUtility;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -24,6 +26,8 @@ import java.util.UUID;
 import static mekhq.campaign.espionage.IntelRating.FINANCIAL_NAME;
 import static mekhq.campaign.espionage.IntelRating.intelAdjacencyMap;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class IntelRatingTest {
 
@@ -195,6 +199,11 @@ class IntelRatingTest {
     @Test
     void testSerializeToXML() throws IOException {
         Campaign mockCampaign = Mockito.mock(Campaign.class);
+        PlayerForce force = Mockito.mock(PlayerForce.class);
+        RankSystem rankSystem = Mockito.mock(RankSystem.class);
+        when(force.getRankSystem()).thenReturn(rankSystem);
+        when(mockCampaign.getPlayerForce()).thenReturn(force);
+
         IntelRating rating = new IntelRating(4);
         Person person = new Person("Bogdan", "Bogdanovich", mockCampaign, "PIR");
         person.setId(UUID.fromString("13bcf124-9468-4c40-9f2a-922b776ba7bb"));
@@ -225,6 +234,11 @@ class IntelRatingTest {
     @Test
     void testDeserializeFromXML() throws IOException, ParserConfigurationException, SAXException {
         Campaign mockCampaign = Mockito.mock(Campaign.class);
+        PlayerForce force = Mockito.mock(PlayerForce.class);
+        RankSystem rankSystem = Mockito.mock(RankSystem.class);
+        when(force.getRankSystem()).thenReturn(rankSystem);
+        when(mockCampaign.getPlayerForce()).thenReturn(force);
+
         int level = 6;
         String entityDesc = "Mek A";
         int entityId = 13;
