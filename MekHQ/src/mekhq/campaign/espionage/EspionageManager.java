@@ -79,6 +79,17 @@ public class EspionageManager {
         return null;
     }
 
+    /**
+     * Clear all Espionage state and remove references.
+     */
+    public static void clearInstance() {
+        if (instance != null) {
+            instance.campaign = null;
+            instance.espionageFactory = null;
+            instance = null;
+        }
+    }
+
     public void addSphereOfInfluence(SphereOfInfluence sphereOfInfluence) {
         spheres.add(sphereOfInfluence);
     }
@@ -101,6 +112,10 @@ public class EspionageManager {
         return null;
     }
 
+    public void populateSpheresOfInfluence(Campaign campaign, boolean includeTutorial) {
+        spheres = espionageFactory.generateSpheresOfInfluence(campaign, includeTutorial);
+    }
+
     public void setCampaign(Campaign campaign) {
         this.campaign = campaign;
     }
@@ -110,6 +125,9 @@ public class EspionageManager {
     }
 
     public ArrayList<SphereOfInfluence> getSpheres() {
+        if (spheres == null) {
+            spheres = new ArrayList<>();
+        }
         return spheres;
     }
 
