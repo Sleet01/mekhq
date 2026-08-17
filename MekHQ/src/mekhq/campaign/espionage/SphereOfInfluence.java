@@ -60,6 +60,7 @@ public class SphereOfInfluence {
 
     private int soiId;
     private UUID contractId;
+    private int nextItemId = 0;
     private String title;
     private String description;
 
@@ -178,6 +179,20 @@ public class SphereOfInfluence {
 
     public void setEventsListForActor(int id, ArrayList<IntelEvent> eventsList) {
         eventsMap.put(id, eventsList);
+    }
+
+    public int getNextItemId() {
+        return nextItemId;
+    }
+
+    public void setNextItemId(int next) {
+        nextItemId = next;
+    }
+
+    public int advanceItemId() {
+        int next = nextItemId;
+        nextItemId++;
+        return next;
     }
 
     public void addEventForActor(int id, IntelEvent event) {
@@ -377,6 +392,7 @@ public class SphereOfInfluence {
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "missionId", contractId);
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "title", title);
         MHQXMLUtility.writeSimpleXMLTag(pw, indent, "description", description);
+        MHQXMLUtility.writeSimpleXMLTag(pw, indent, "nextItemId", nextItemId);
 
         // actorsRatingsMap map of maps
         MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "actorsRatings");
@@ -434,6 +450,8 @@ public class SphereOfInfluence {
                     title = item.getTextContent();
                 } else if (item.getNodeName().equalsIgnoreCase("description")) {
                     description = item.getTextContent();
+                } else if (item.getNodeName().equalsIgnoreCase("nextItemId")) {
+                    nextItemId = Integer.parseInt(item.getTextContent());
                 } else if (item.getNodeName().equalsIgnoreCase("actorsRatings")) {
                     loadActorRatingsFromNode(campaign, version, item);
                 } else if (item.getNodeName().equalsIgnoreCase("eventsMap")) {

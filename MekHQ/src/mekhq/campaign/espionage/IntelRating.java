@@ -63,6 +63,7 @@ import java.util.UUID;
 public class IntelRating {
     private static final MMLogger LOGGER = MMLogger.create(IntelRating.class);
 
+    // TODO: add per-language properties definitions for these values
     public final static String FORCES_NAME = "ForcesIntel";
     public final static String POSITION_NAME = "PositionIntel";
     public final static String LOGISTICS_NAME = "LogisticsIntel";
