@@ -672,8 +672,24 @@ public class CampaignOptions {
         return get(CampaignOption.USE_ESPIONAGE_SYSTEM);
     }
 
+    public boolean isEspionageTutorialEnabled() {
+        return get(CampaignOption.ESPIONAGE_TUTORIAL_ENABLED);
+    }
+
+    public boolean isEspionageTutorialCompleted() {
+        return get(CampaignOption.ESPIONAGE_TUTORIAL_COMPLETED);
+    }
+
     public void setUseEspionageSystem(boolean useEspionageSystem) {
         set(CampaignOption.USE_ESPIONAGE_SYSTEM, useEspionageSystem);
+    }
+
+    public void setEspionageTutorialEnabled(boolean enabled) {
+        set(CampaignOption.ESPIONAGE_TUTORIAL_ENABLED, enabled);
+    }
+
+    public void setEspionageTutorialCompleted(boolean completed) {
+        set(CampaignOption.ESPIONAGE_TUTORIAL_COMPLETED, completed);
     }
 
     /**

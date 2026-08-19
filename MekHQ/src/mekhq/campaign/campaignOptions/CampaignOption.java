@@ -1061,6 +1061,10 @@ public final class CampaignOption<T> {
           of(Boolean.class, false, "useReplaceEdgeAwards");
     public static final CampaignOption<Boolean> USE_ESPIONAGE_SYSTEM =
           of(Boolean.class, true, "useEspionageSystem");
+    public static final CampaignOption<Boolean> ESPIONAGE_TUTORIAL_ENABLED =
+          of(Boolean.class, false, "espionageTutorialEnabled");
+    public static final CampaignOption<Boolean> ESPIONAGE_TUTORIAL_COMPLETED =
+          of(Boolean.class, false, "espionageTutorialCompleted");
     // endregion Migrated Options
 
     private final Class<T> type;

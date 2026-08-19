@@ -46,6 +46,8 @@ import megamek.common.autoResolve.acar.Settings;
 import mekhq.gui.campaignOptions.components.CampaignOptionsCheckBox;
 import mekhq.gui.campaignOptions.components.CampaignOptionsPagePanel;
 import mekhq.gui.campaignOptions.components.CampaignOptionsHeaderPanel;
+import mekhq.gui.dialog.GMToolsDialog;
+import mekhq.gui.dialog.factionStanding.gmToolsDialog.GMTools;
 
 
 /**
@@ -65,6 +67,8 @@ class EspionagePage {
     private static final int CHECKBOX_GRID_COLUMNS = 2;
 
     private JCheckBox chkEnableEspionageSystem;
+    private JCheckBox chkEnableTutorial;
+    private JCheckBox chkTutorialCompleted;
 
     private CampaignOptionsHeaderPanel espionageHeader;
 
@@ -87,7 +91,6 @@ class EspionagePage {
         JPanel pnlEspionageGeneralOptions = createEspionageGeneralPanel();
 
         // Layout the Panel
-        // final JPanel panel = new CampaignOptionsStandardPanel("EspionageTab", true);
         final JPanel panel = CampaignOptionsPagePanel.builder("EspionagePage", "EspionagePage",
                     imageAddress)
                .header(espionageHeader)
@@ -115,12 +118,22 @@ class EspionagePage {
         chkEnableEspionageSystem = new CampaignOptionsCheckBox("EnableEspionageSystem");
         chkEnableEspionageSystem.addMouseListener(createTipPanelUpdater("EnableEspionageSystem"));
 
+        chkEnableTutorial = new CampaignOptionsCheckBox("EnableEspionageTutorial");
+        chkEnableTutorial.addMouseListener(createTipPanelUpdater("EnableEspionageTutorial"));
+
+        chkTutorialCompleted = new CampaignOptionsCheckBox("TutorialEspionageCompleted");
+        chkTutorialCompleted.addMouseListener(createTipPanelUpdater("TutorialEspionageCompleted"));
+
         // Layout the Panel
         final SettingsFormPanel panel = new SettingsFormPanel("EspionageGeneralOptionsPanel",
               FORM_LABEL_COLUMN_WIDTH,
               FORM_CONTROL_COLUMN_WIDTH);
-        panel.addCheckBoxGrid(CHECKBOX_GRID_COLUMNS,
-              chkEnableEspionageSystem);
+        panel.addCheckBoxGrid(
+              CHECKBOX_GRID_COLUMNS,
+              chkEnableEspionageSystem,
+              chkEnableTutorial,
+              chkTutorialCompleted
+        );
 
         return panel;
     }
@@ -138,6 +151,8 @@ class EspionagePage {
 
         // chkEnableEspionageSystem.setSelected(options.isUseEspionageSystem());
         chkEnableEspionageSystem.setSelected(model.useEspionageSystem);
+        chkEnableTutorial.setSelected(model.espionageTutorialEnabled);
+        chkTutorialCompleted.setSelected(model.espionageTutorialCompleted);
     }
 
     /**
@@ -152,5 +167,7 @@ class EspionagePage {
         }
 
         model.useEspionageSystem = chkEnableEspionageSystem.isSelected();
+        model.espionageTutorialEnabled = chkEnableTutorial.isSelected();
+        model.espionageTutorialCompleted = chkTutorialCompleted.isSelected();
     }
 }

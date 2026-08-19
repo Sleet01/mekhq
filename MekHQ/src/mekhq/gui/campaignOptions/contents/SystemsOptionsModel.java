@@ -64,6 +64,8 @@ class SystemsOptionsModel {
     boolean useFactionStandingContractPay;
     boolean useFactionStandingSupportPoints;
     boolean useEspionageSystem;
+    boolean espionageTutorialEnabled;
+    boolean espionageTutorialCompleted;
 
     SystemsOptionsModel(@Nonnull CampaignOptions options) {
         manualUnitRatingModifier = options.get(CampaignOption.MANUAL_UNIT_RATING_MODIFIER);
@@ -93,6 +95,8 @@ class SystemsOptionsModel {
         useFactionStandingContractPay = options.get(CampaignOption.USE_FACTION_STANDING_CONTRACT_PAY);
         useFactionStandingSupportPoints = options.get(CampaignOption.USE_FACTION_STANDING_SUPPORT_POINTS);
         useEspionageSystem = options.isUseEspionageSystem();
+        espionageTutorialEnabled = options.isEspionageTutorialEnabled();
+        espionageTutorialCompleted = options.isEspionageTutorialCompleted();
     }
 
     void applyTo(@Nonnull CampaignOptions options) {
@@ -122,5 +126,7 @@ class SystemsOptionsModel {
         options.set(CampaignOption.USE_FACTION_STANDING_CONTRACT_PAY, useFactionStandingContractPay);
         options.set(CampaignOption.USE_FACTION_STANDING_SUPPORT_POINTS, useFactionStandingSupportPoints);
         options.setUseEspionageSystem(useEspionageSystem);
+        options.setEspionageTutorialEnabled(espionageTutorialEnabled);
+        options.setEspionageTutorialCompleted(espionageTutorialCompleted);
     }
 }

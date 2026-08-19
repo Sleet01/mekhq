@@ -40,6 +40,8 @@ import megamek.common.preference.IPreferenceChangeListener;
 import megamek.common.ui.EnhancedTabbedPane;
 import megamek.logging.MMLogger;
 import mekhq.MekHQ;
+import mekhq.campaign.Campaign;
+import mekhq.campaign.espionage.EspionageFactory;
 import mekhq.campaign.espionage.EspionageManager;
 import mekhq.campaign.espionage.SphereOfInfluence;
 import mekhq.campaign.events.OptionsChangedEvent;
@@ -48,6 +50,7 @@ import mekhq.campaign.events.persons.PersonLogEvent;
 import mekhq.campaign.events.persons.PersonNewEvent;
 import mekhq.campaign.events.persons.PersonRemovedEvent;
 import mekhq.campaign.events.scenarios.ScenarioResolvedEvent;
+import mekhq.campaign.mission.Mission;
 import mekhq.campaign.personnel.Person;
 import mekhq.gui.baseComponents.roundedComponents.RoundedLineBorder;
 import mekhq.gui.baseComponents.tables.MHQTable;
@@ -340,6 +343,29 @@ public final class EspionageTab extends CampaignGuiTab {
 
     @Subscribe
     public void handle(OptionsChangedEvent ev) {
+        Campaign campaign = getCampaign();
+        Mission mission = campaign.getActiveMissions(true).getFirst();
+        EspionageManager manager = EspionageManager.getInstance(campaign);
+
+        if (manager != null) {
+            if (campaign.getCampaignOptions().isEspionageTutorialEnabled()) {
+                EspionageFactory factory = EspionageFactory.getInstance();
+                SphereOfInfluence tutorialSOI = EspionageFactory.generateTutorialSOI(campaign,
+                      mission, factory.getNextSOIIndex());
+                manager.addSphereOfInfluence(tutorialSOI);
+            } else {
+                // Remove any existing Tutorial SOI
+                // Todo: add a "removeTutorialSOI()" to EspionageManager
+                for (SphereOfInfluence soi : EspionageManager.getInstance().getSpheres()) {
+                    if (soi.getTitle().toLowerCase().contains("tutorial")) {
+                        manager.getSpheres().remove(soi);
+                        soi.cleanUp();
+                        break;
+                    }
+                }
+            }
+        }
+
         changePersonnelView();
         personnelListScheduler.schedule();
     }
