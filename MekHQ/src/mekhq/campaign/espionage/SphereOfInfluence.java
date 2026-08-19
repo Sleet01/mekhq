@@ -538,4 +538,13 @@ public class SphereOfInfluence {
             LOGGER.error("", e);
         }
     }
+
+    /**
+     * Unload / destroy all Events, Items, etc.
+     * Unassign Persons from any Events as well, so that they can be returned to the pool.
+     */
+    public void cleanUp() {
+        //TODO: implement
+
+    }
 }
