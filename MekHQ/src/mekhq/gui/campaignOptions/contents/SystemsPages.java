@@ -39,6 +39,8 @@ import jakarta.annotation.Nullable;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.campaignOptions.CampaignOptions;
 import mekhq.campaign.espionage.EspionageManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The {@code SystemsPages} class coordinates the Systems section of the MekHQ Campaign Options dialog. It owns the
@@ -54,6 +56,7 @@ import mekhq.campaign.espionage.EspionageManager;
  * @since 0.50.07
  */
 public class SystemsPages {
+    private static final Logger log = LogManager.getLogger(SystemsPages.class);
     private final Campaign campaign;
     private final CampaignOptions campaignOptions;
     private SystemsOptionsModel model;
@@ -172,15 +175,19 @@ public class SystemsPages {
         // Did the use of Espionage system change?
         // Either create and populate, or kill and clear, espionage tracking
         if (model.useEspionageSystem != options.isUseEspionageSystem()) {
-            if (model.useEspionageSystem) {
-                // We have activated the Espionage system; make sure everything gets populated!
-                // Clear and reconstitute the Espionage Manager instance, then assign it to this campaign
-                EspionageManager.clearInstance();
-                EspionageManager espionageManager = EspionageManager.getInstance();
-                espionageManager.setCampaign(campaign);
-                espionageManager.populateSpheresOfInfluence(campaign, false);
-            } else {
-                EspionageManager.clearInstance();
+            try {
+                if (model.useEspionageSystem) {
+                    // We have activated the Espionage system; make sure everything gets populated!
+                    // Clear and reconstitute the Espionage Manager instance, then assign it to this campaign
+                    EspionageManager.clearInstance();
+                    EspionageManager espionageManager = EspionageManager.getInstance();
+                    espionageManager.setCampaign(campaign);
+                    espionageManager.populateSpheresOfInfluence(campaign, false);
+                } else {
+                    EspionageManager.clearInstance();
+                }
+            } catch (Exception e) {
+                log.error("Error during toggling Espionage system!");
             }
         }
 
