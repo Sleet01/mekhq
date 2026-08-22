@@ -50,7 +50,7 @@ import mekhq.campaign.events.persons.PersonLogEvent;
 import mekhq.campaign.events.persons.PersonNewEvent;
 import mekhq.campaign.events.persons.PersonRemovedEvent;
 import mekhq.campaign.events.scenarios.ScenarioResolvedEvent;
-import mekhq.campaign.mission.Mission;
+import mekhq.campaign.mission.contract.AbstractContract;
 import mekhq.campaign.personnel.Person;
 import mekhq.gui.baseComponents.roundedComponents.RoundedLineBorder;
 import mekhq.gui.baseComponents.tables.MHQTable;
@@ -344,7 +344,7 @@ public final class EspionageTab extends CampaignGuiTab {
     @Subscribe
     public void handle(OptionsChangedEvent ev) {
         Campaign campaign = getCampaign();
-        Mission mission = campaign.getActiveMissions(true).getFirst();
+        AbstractContract mission = campaign.getActiveMissions().getFirst();
         EspionageManager manager = EspionageManager.getInstance(campaign);
 
         if (manager != null) {

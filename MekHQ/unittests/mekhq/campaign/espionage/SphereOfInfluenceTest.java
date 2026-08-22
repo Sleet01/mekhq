@@ -20,6 +20,7 @@ import java.io.StringWriter;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,14 +40,14 @@ class SphereOfInfluenceTest {
     @Test
     void testSphereOfInfluenceXMLSerDes() throws IOException, ParserConfigurationException, SAXException {
         int soiId = 1;
-        int missionId = 2;
+        UUID contractId = UUID.randomUUID();
         String title = "Edwards System Sphere of Influence";
         String description = "This is a test sphere of Influence";
 
         // SOI setup
         SphereOfInfluence soi = new SphereOfInfluence();
         soi.setSoiId(soiId);
-        soi.setContractId(missionId);
+        soi.setContractId(contractId);
         soi.setTitle(title);
         soi.setDescription(description);
 
@@ -100,7 +101,7 @@ class SphereOfInfluenceTest {
 
         // Test values
         assertEquals(soiId, deserialized.getSoiId());
-        assertEquals(missionId, deserialized.getContractId());
+        assertEquals(contractId, deserialized.getContractId());
         assertEquals(title, deserialized.getTitle());
         assertEquals(description, deserialized.getDescription());
 
