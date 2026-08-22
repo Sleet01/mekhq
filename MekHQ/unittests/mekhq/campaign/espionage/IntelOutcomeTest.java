@@ -42,6 +42,7 @@ import megamek.common.units.Entity;
 import megamek.common.units.Mek;
 import megamek.common.units.Tank;
 import mekhq.campaign.Campaign;
+import mekhq.campaign.campaignOptions.CampaignOption;
 import mekhq.campaign.campaignOptions.CampaignOptions;
 import mekhq.campaign.espionage.inteltypes.PositionIntel;
 import mekhq.campaign.personnel.Person;
@@ -87,11 +88,11 @@ class IntelOutcomeTest {
         // Initialize the mock objects
         campaign = mock(Campaign.class);
         CampaignOptions options = mock(CampaignOptions.class);
-        when(options.getNonBinaryDiceSize()).thenReturn(60);
-        when(options.isAutoGenerateOpForCallSigns()).thenReturn(false);
-        when(options.getMinimumCallsignSkillLevel()).thenReturn(SkillLevel.VETERAN);
-        when(options.isUseTactics()).thenReturn(false);
-        when(options.isUseInitiativeBonus()).thenReturn(false);
+        when(options.get(CampaignOption.NON_BINARY_DICE_SIZE)).thenReturn(60);
+        when(options.get(CampaignOption.AUTO_GENERATE_OP_FOR_CALL_SIGNS)).thenReturn(false);
+        when(options.get(CampaignOption.MINIMUM_CALLSIGN_SKILL_LEVEL)).thenReturn(SkillLevel.VETERAN);
+        when(options.get(CampaignOption.USE_TACTICS)).thenReturn(false);
+        when(options.get(CampaignOption.USE_INITIATIVE_BONUS)).thenReturn(false);
 
         RandomSkillPreferences randomSkillPreferences = mock(RandomSkillPreferences.class);
         when(randomSkillPreferences.randomizeSkill()).thenReturn(false);

@@ -39,7 +39,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
 import mekhq.campaign.finances.enums.TransactionType;
 import mekhq.campaign.force.PlayerForce;
-import mekhq.campaign.mission.Mission;
+import mekhq.campaign.mission.contract.AbstractContract;
 import mekhq.campaign.universe.Faction;
 
 import java.time.LocalDate;
@@ -106,14 +106,14 @@ public class EspionageFactory {
     public ArrayList<SphereOfInfluence> generateSpheresOfInfluence(Campaign campaign, boolean includeTutorial) {
         ArrayList<SphereOfInfluence> spheresList = new ArrayList<>();
 
-        List<Mission> missionList = campaign.getActiveMissions(true);
+        List<AbstractContract> contractList = campaign.getActiveMissions();
         int i = nextSOIIndex;
         if (includeTutorial) {
-            SphereOfInfluence tutorial = generateTutorialSOI(campaign, missionList.getFirst(), i);
+            SphereOfInfluence tutorial = generateTutorialSOI(campaign, contractList.getFirst(), i);
             spheresList.add(tutorial);
             i++;
         }
-        for (Mission mission: missionList) {
+        for (AbstractContract mission: contractList) {
             SphereOfInfluence soi = generateSphereOfInfluence(campaign, mission, i);
             spheresList.add(soi);
             i++;
@@ -135,7 +135,7 @@ public class EspionageFactory {
      * @param soiId     ID assigned by the factory.  soiId + mission ID *should* form a unique ID.
      * @return          SOI instance, with title, description, ratings, a few items, and some events populated.
      */
-    public static SphereOfInfluence generateSphereOfInfluence(Campaign campaign, Mission mission, int soiId) {
+    public static SphereOfInfluence generateSphereOfInfluence(Campaign campaign, AbstractContract mission, int soiId) {
         String title = generateSOITitle(campaign, mission);
         String description = generateSOIDescription(campaign, mission, title);
         HashMap<Integer, HashMap<Integer, IntelRating>> actorsRatingsMap = generateActorsRatingsMap(campaign, mission);
@@ -156,7 +156,7 @@ public class EspionageFactory {
     }
 
     // Todo: add template system for tutorial
-    public static SphereOfInfluence generateTutorialSOI(Campaign campaign, Mission mission, int soiId) {
+    public static SphereOfInfluence generateTutorialSOI(Campaign campaign, AbstractContract mission, int soiId) {
         // Should read a tutorial SOI definition in from disk here, then populate the SOI.
         // But for now, manually populate the crap out of it!
 
@@ -167,7 +167,7 @@ public class EspionageFactory {
 
         SphereOfInfluence soi = new SphereOfInfluence();
         soi.setSoiId(soiId);
-        soi.setMissionId(mission.getId());
+        soi.setContractId(mission.getId());
         soi.setTitle(generateSOITitle(campaign, mission) + " (Tutorial)");
         soi.setDescription(generateTutorialSOIDescription(campaign, mission, faction, soi.getTitle(), liaisonName));
 
@@ -183,23 +183,23 @@ public class EspionageFactory {
         return soi;
     }
 
-    public static String generateSOITitle(Campaign campaign, Mission mission) {
+    public static String generateSOITitle(Campaign campaign, AbstractContract mission) {
         String title = "Default Title";
 
         return title;
     }
 
-    private static String generateSOIDescription(Campaign campaign, Mission mission, String title) {
+    private static String generateSOIDescription(Campaign campaign, AbstractContract mission, String title) {
         StringBuilder description = new StringBuilder();
         return description.toString();
     }
 
-    private static String generateTutorialSOIDescription(Campaign campaign, Mission mission,
+    private static String generateTutorialSOIDescription(Campaign campaign, AbstractContract contract,
           Faction faction, String title,
           String liaison) {
-        String employer = mission.getEmployerName();
+        String employer = contract.getEmployerDisplayName();
         String factionName = faction.getShortName();
-        String intelOrg = generateIntelOrg(campaign, mission, faction);
+        String intelOrg = generateIntelOrg(campaign, contract, faction);
 
         StringBuilder description = new StringBuilder();
         description.append("An introduction to the Espionage system.")
@@ -216,7 +216,7 @@ public class EspionageFactory {
         return description.toString();
     }
 
-    private static IntelEvent generateInitialTutorialEvent(Campaign campaign, Mission mission, String liaison,
+    private static IntelEvent generateInitialTutorialEvent(Campaign campaign, AbstractContract mission, String liaison,
           int playerId) {
         // Start from a bare IntelEvent because we don't need prereqs
         IntelEvent initialEvent = new IntelEvent();
@@ -258,7 +258,7 @@ public class EspionageFactory {
         };
     }
 
-    private static String generateMisterSmithName(Campaign campaign, Mission mission, Faction faction) {
+    private static String generateMisterSmithName(Campaign campaign, AbstractContract mission, Faction faction) {
         // TODO: add per-faction, per-region names in YAML file
         return "Mr. Smith";
     }
@@ -319,7 +319,7 @@ public class EspionageFactory {
         return decodedCard;
     }
 
-    private static String generateIntelOrg(Campaign campaign, Mission mission, Faction faction) {
+    private static String generateIntelOrg(Campaign campaign, AbstractContract mission, Faction faction) {
         // TODO: add per-faction, per-region intel orgs in YAML file
         return "Spies";
     }
@@ -391,17 +391,17 @@ public class EspionageFactory {
         return manager.getCampaign();
     }
 
-    private static HashMap<Integer, HashMap<Integer, IntelRating>> generateActorsRatingsMap(Campaign campaign, Mission mission) {
+    private static HashMap<Integer, HashMap<Integer, IntelRating>> generateActorsRatingsMap(Campaign campaign, AbstractContract mission) {
         HashMap<Integer, HashMap<Integer, IntelRating>> ratingsMap = new HashMap<>();
         return ratingsMap;
     }
 
-    private static ArrayList<IntelItem> generateIntelItems(Campaign campaign, Mission mission) {
+    private static ArrayList<IntelItem> generateIntelItems(Campaign campaign, AbstractContract mission) {
         ArrayList<IntelItem> itemsList = new ArrayList<>();
         return itemsList;
     }
 
-    private static HashMap<Integer, ArrayList<IntelEvent>> generateEventsMap(Campaign campaign, Mission mission) {
+    private static HashMap<Integer, ArrayList<IntelEvent>> generateEventsMap(Campaign campaign, AbstractContract mission) {
         HashMap<Integer, ArrayList<IntelEvent>> eventMap = new HashMap<>();
         return eventMap;
     }
