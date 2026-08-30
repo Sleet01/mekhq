@@ -137,6 +137,7 @@ import mekhq.campaign.enums.CampaignTransportType;
 import mekhq.campaign.enums.DailyReportType;
 import mekhq.campaign.enums.DragoonRating;
 import mekhq.campaign.espionage.EspionageManager;
+import mekhq.campaign.espionage.EspionageRoster;
 import mekhq.campaign.espionage.SphereOfInfluence;
 import mekhq.campaign.events.*;
 import mekhq.campaign.events.loans.LoanNewEvent;
@@ -3755,13 +3756,19 @@ public class Campaign implements ITechManager {
         }
         MHQXMLUtility.writeSimpleXMLCloseTag(writer, --indent, "kills");
 
-        // Write every SphereOfInfluence to the save, as the EspionageManager is stateless (mostly)
+        // Write every EspionageRoster and SphereOfInfluence to the save, as the EspionageManager
+        // is stateless (mostly)
         MHQXMLUtility.writeSimpleXMLOpenTag(writer, indent++, "espionage");
-        if (EspionageManager.getInstance(this) != null) {
-            for (SphereOfInfluence soi: EspionageManager.getInstance(this).getSpheres()) {
+        EspionageManager instance = EspionageManager.getInstance(this);
+        if (instance != null) {
+            for (EspionageRoster roster: instance.getAssignments()) {
+                roster.writeToXML(this, writer, indent);
+            }
+            for (SphereOfInfluence soi: instance.getSpheres()) {
                 soi.writeToXML(this, writer, indent);
             }
         }
+        MHQXMLUtility.writeSimpleXMLCloseTag(writer, --indent, "espionage");
 
         MHQXMLUtility.writeSimpleXMLOpenTag(writer, indent++, "skillTypes");
         for (final String skillName : SkillType.skillList) {
