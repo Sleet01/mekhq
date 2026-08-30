@@ -376,7 +376,7 @@ public class SphereOfInfluence {
             retVal.loadFieldsFromXmlNode(campaign, version, node);
 
         } catch (Exception ex) {
-            LOGGER.error("", ex);
+            LOGGER.error("Error generating SphereOfInfluence from XML!", ex);
         }
 
         return retVal;
@@ -436,7 +436,7 @@ public class SphereOfInfluence {
         try {
             soiId = Integer.parseInt(node.getAttributes().getNamedItem("soiId").getNodeValue());
         } catch (Exception e) {
-            LOGGER.error("", e);
+            LOGGER.error("Error loading SphereOfInfluence instance!", e);
         }
 
         NodeList childNodes = node.getChildNodes();

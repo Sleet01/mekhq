@@ -37,10 +37,12 @@ import megamek.common.annotations.Nullable;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.mission.scenarios.Scenario;
+import mekhq.campaign.personnel.Person;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.UUID;
 
 public class EspionageManager {
 
@@ -54,24 +56,28 @@ public class EspionageManager {
     private transient Campaign campaign;
     private transient EspionageFactory espionageFactory;
     private ArrayList<SphereOfInfluence> spheres;
+    private ArrayList<EspionageRoster> assignments;
 
     private EspionageManager(Campaign campaign, EspionageFactory espionageFactory,
-          ArrayList<SphereOfInfluence> spheres) {
+          ArrayList<SphereOfInfluence> spheres, ArrayList<EspionageRoster> assignedUUIDs) {
         this.campaign = campaign;
         this.espionageFactory = espionageFactory;
         this.spheres = spheres;
+        this.assignments = assignedUUIDs;
     }
 
     public static @Nullable EspionageManager getInstance() {
         if (instance == null) {
-            instance = new EspionageManager(null, EspionageFactory.getInstance(), new ArrayList<>());
+            instance = new EspionageManager(null, EspionageFactory.getInstance(), new ArrayList<>(),
+                  new ArrayList<>());
         }
         return instance;
     }
 
     public static @Nullable EspionageManager getInstance(Campaign campaign) {
         if (instance == null) {
-            instance = new EspionageManager(campaign, EspionageFactory.getInstance(), new ArrayList<>());
+            instance = new EspionageManager(campaign, EspionageFactory.getInstance(), new ArrayList<>(),
+                  new ArrayList<>());
             return instance;
         } else if (instance.campaign == campaign) {
             return instance;
@@ -88,6 +94,75 @@ public class EspionageManager {
             instance.espionageFactory = null;
             instance = null;
         }
+    }
+
+    // TODO: update to track Persons assigned _per player_
+    public ArrayList<EspionageRoster> getAssignments() {
+        return this.assignments;
+    }
+
+    @Nullable
+    public EspionageRoster getAssignmentsForPlayer(int playerId) {
+        for (EspionageRoster roster: this.assignments) {
+            if (roster.getPlayerId() ==  playerId) {
+                return roster;
+            }
+        }
+        return null;
+    }
+
+    public void setAssignments(ArrayList<EspionageRoster> rosters) {
+        this.assignments = rosters;
+    }
+
+    public void removeAssignmentsForPlayer(int playerId) {
+        EspionageRoster toRemove = getAssignmentsForPlayer(playerId);
+        if (toRemove != null) {
+            assignments.remove(toRemove);
+        }
+    }
+
+    public void setAssignmentsForPlayer(int playerId, EspionageRoster roster) {
+        removeAssignmentsForPlayer(playerId);
+        this.assignments.add(roster);
+    }
+
+    public void addPersonForPlayer(Person person, int playerId) {
+        EspionageRoster roster = getAssignmentsForPlayer(playerId);
+        if (roster != null) {
+            roster.assignPerson(person);
+        }
+    }
+
+    public void removePersonForPlayer(Person person, int playerId) {
+        EspionageRoster roster = getAssignmentsForPlayer(playerId);
+        if (roster != null) {
+            roster.removePerson(person);
+        }
+    }
+
+    public @Nullable Person getPerson(UUID personId) {
+        for (EspionageRoster roster: assignments) {
+            if (roster.containsPerson(personId)) {
+                return roster.getPersonFromUUID(personId);
+            }
+        }
+        return null;
+    }
+
+    public void assignPersonToSOI(Person person, int playerId, SphereOfInfluence soi) {
+        EspionageRoster roster = getAssignmentsForPlayer(playerId);
+        if (roster != null) {
+            roster.reassignPersonToSOI(person.getId(), soi.getSoiId());
+        }
+    }
+
+    public void unassignPersonFromSOI(Person person, int playerId) {
+        EspionageRoster roster = getAssignmentsForPlayer(playerId);
+        if (roster != null) {
+            roster.unassignPerson(person);
+        }
+
     }
 
     public void addSphereOfInfluence(SphereOfInfluence sphereOfInfluence) {

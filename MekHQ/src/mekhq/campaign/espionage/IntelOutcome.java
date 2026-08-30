@@ -138,7 +138,7 @@ public class IntelOutcome implements IResultEvaluator, Serializable {
 
     public String toString() {
         String representation = title;
-        if (linkedObjects.size() > 0) {
+        if (!linkedObjects.isEmpty()) {
             representation += (linkedObjects.size() == 1) ? " [1 item]" : String.format(" [%s items]",
               linkedObjects.size());
         }
