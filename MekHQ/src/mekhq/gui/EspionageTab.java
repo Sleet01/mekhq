@@ -43,7 +43,9 @@ import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.espionage.EspionageFactory;
 import mekhq.campaign.espionage.EspionageManager;
+import mekhq.campaign.espionage.EspionageRoster;
 import mekhq.campaign.espionage.SphereOfInfluence;
+import mekhq.campaign.events.NewDayEvent;
 import mekhq.campaign.events.OptionsChangedEvent;
 import mekhq.campaign.events.persons.PersonChangedEvent;
 import mekhq.campaign.events.persons.PersonLogEvent;
@@ -97,7 +99,6 @@ public final class EspionageTab extends CampaignGuiTab {
     private JScrollPane jspEspionageEvents;
     private JPanel jpEspionageChartPanel;
     private JPanel jpDetailsPanel;
-    private EspionageManager espionageManager;
 
     // keep
     private MHQTable<Person, PersonnelTableModelColumn, PersonnelTableModel> jtEspionagePersonnel;
@@ -109,7 +110,6 @@ public final class EspionageTab extends CampaignGuiTab {
         super(gui, name);
         MekHQ.registerHandler(this);
         setUserPreferences();
-        this.espionageManager = gui.getCampaign().getEspionageManager();
     }
     // endregion Constructors
 
@@ -268,15 +268,20 @@ public final class EspionageTab extends CampaignGuiTab {
     }
 
     /**
-     * Currently no-op, may need functionality.
+     * Only show personnel assigned to this EspionageManager.
      */
     public void filterPersonnel() {
-        jtEspionagePersonnel.setRowFilter(new RowFilter<>() {
-            @Override
-            public boolean include(Entry<? extends PersonnelTableModel, ? extends Integer> entry) {
-                return true;
-            }
-        });
+        Campaign campaign = getCampaign();
+        EspionageManager espionageManager = getCampaignGui().getCampaign().getEspionageManager();
+
+            jtEspionagePersonnel.setRowFilter(new RowFilter<>() {
+                @Override
+                public boolean include(Entry<? extends PersonnelTableModel, ? extends Integer> entry) {
+                    EspionageRoster assignments = espionageManager.getAssignmentsForPlayer(campaign.getPlayer().getId());
+                    Person person = entry.getModel().getRow(entry.getIdentifier());
+                    return (assignments != null && assignments.containsPerson(person.getId()));
+                }
+            });
         jtEspionagePersonnel.refresh();
     }
 
@@ -311,6 +316,7 @@ public final class EspionageTab extends CampaignGuiTab {
     }
 
     public void refreshPersonnelView() {
+        filterPersonnel();
         int row = jtEspionagePersonnel.getSelectedRow();
         if (row < 0) {
             return;
@@ -393,6 +399,11 @@ public final class EspionageTab extends CampaignGuiTab {
     @Subscribe
     public void handle(ScenarioResolvedEvent ev) {
         personnelListScheduler.schedule();
+    }
+
+    @Subscribe
+    public void handle(NewDayEvent ev) {
+        EspionageManager.getInstance().runUpdates(ev.getCampaign().getLocalDate());
     }
 
     private void changePersonnelView() {

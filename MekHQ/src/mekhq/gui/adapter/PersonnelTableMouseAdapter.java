@@ -121,6 +121,7 @@ import mekhq.campaign.Campaign;
 import mekhq.campaign.Kill;
 import mekhq.campaign.campaignOptions.CampaignOption;
 import mekhq.campaign.campaignOptions.CampaignOptions;
+import mekhq.campaign.espionage.EspionageManager;
 import mekhq.campaign.events.persons.PersonChangedEvent;
 import mekhq.campaign.events.persons.PersonLogEvent;
 import mekhq.campaign.events.persons.PersonStatusChangedEvent;
@@ -289,6 +290,10 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
     private static final String CMD_REMOVE_CHILD = "CMD_REMOVE_CHILD";
     private static final String CMD_RANSOM = "RANSOM";
     private static final String CMD_RANSOM_FRIENDLY = "RANSOM_FRIENDLY";
+
+    // Espionage Assignments
+    private static final String CMD_ASSIGN_ESPIONAGE = "ASSIGN";
+    private static final String CMD_UNASSIGN_ESPIONAGE = "UNASSIGN";
 
     // MekWarrior Edge Options
     private static final String OPT_EDGE_MASC_FAILURE = "edge_when_masc_fails";
@@ -507,6 +512,16 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
                     Campaign campaign = getCampaign();
                     campaign.getPlayerForce().getHumanResources().personUpdated(campaign, person);
                 }
+                break;
+            }
+            case CMD_ASSIGN_ESPIONAGE: {
+                int playerId = getCampaign().getPlayer().getId();
+                processEspionageAssignment(true, playerId, people);
+                break;
+            }
+            case CMD_UNASSIGN_ESPIONAGE: {
+                int playerId = getCampaign().getPlayer().getId();
+                processEspionageAssignment(false, playerId, people);
                 break;
             }
             case CMD_ADD_PREGNANCY: {
@@ -2273,6 +2288,19 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
         }
     }
 
+    private void processEspionageAssignment(boolean assign, int playerId, Person... people) {
+        EspionageManager manager = EspionageManager.getInstance();
+        if (manager != null) {
+            for (Person person: people) {
+                if (assign) {
+                    manager.addPersonForPlayer(person, playerId);
+                } else {
+                    manager.removePersonForPlayer(person, playerId);
+                }
+            }
+        }
+    }
+
     private void loadGMToolsForPerson(Person person) {
         GMToolsDialog gmToolsDialog = new GMToolsDialog(getFrame(), gui, person);
         gmToolsDialog.setVisible(true);
@@ -2513,6 +2541,7 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
 
         JMenuHelpers.addMenuIfNonEmpty(popup, createChangePrimaryRoleMenu(oneSelected ? person : null, roles));
         JMenuHelpers.addMenuIfNonEmpty(popup, createChangeSecondaryRoleMenu(oneSelected ? person : null, roles));
+        JMenuHelpers.addMenuIfNonEmpty(popup, changeEspionageAssignmentMenu(selected));
 
         JMenu healthcareMenu = new JMenu(resources.getString("healthcare.text"));
         boolean isUseAltAdvancedMedical = getCampaignOptions().get(CampaignOption.USE_ALTERNATIVE_ADVANCED_MEDICAL);
@@ -4840,6 +4869,30 @@ public class PersonnelTableMouseAdapter extends JPopupMenuAdapter {
         addRoleItems(menu, availableCombatRoles, person, "changeRole.combat", true, false);
         addRoleItems(menu, availableSupportRoles, person, "changeRole.support", true, false);
         addRoleItems(menu, availableCivilianRoles, person, "changeRole.civilian", true, false);
+
+        return menu;
+    }
+
+    /**
+     * Menu entry for assigning Persons to the Espionage system, or unassigning them.
+     * Currently Espionage is entirely orthogonal to all other Person management.
+     *
+     * @param people
+     * @return menu items for changing Espionage assignment.
+     */
+    private JMenu changeEspionageAssignmentMenu(@Nullable Person... people) {
+        JMenu menu = new JMenu("Espionage");
+        JMenuItem menuItem;
+
+        menuItem = new JMenuItem("Assign");
+        menuItem.setActionCommand(CMD_ASSIGN_ESPIONAGE);
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
+
+        menuItem = new JMenuItem("Unassign");
+        menuItem.setActionCommand(CMD_UNASSIGN_ESPIONAGE);
+        menuItem.addActionListener(this);
+        menu.add(menuItem);
 
         return menu;
     }

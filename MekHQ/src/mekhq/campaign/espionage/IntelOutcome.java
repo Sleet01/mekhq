@@ -177,6 +177,7 @@ public class IntelOutcome implements IResultEvaluator, Serializable {
         MHQXMLUtility.writeSerialCDATA(pw, indent, "testFunction", testFunction);
         MHQXMLUtility.writeSerialCDATA(pw, indent, "applyFunction", applyFunction);
         MHQXMLUtility.writeSimpleXMLOpenTag(pw, indent++, "linkedObjects");
+        // Todo: replace with UUID write
         for (Object linkedObject: linkedObjects) {
             if (linkedObject instanceof Person person) {
                 person.writeToXML(pw, indent, campaign);

@@ -113,6 +113,8 @@ public class SystemsPages {
      * @since 0.51.01
      */
     public @Nonnull JPanel createEspionagePage() {
+        // espionagePage needs to know if there is an active mission for Tutorial setting.
+        espionagePage.setHasActiveMission(!campaign.getActiveContracts().isEmpty());
         return espionagePage.createPanel(model);
     }
 
@@ -145,6 +147,7 @@ public class SystemsPages {
 
         model = new SystemsOptionsModel(options);
         updateCreatedControlsFromModel();
+        espionagePage.setHasActiveMission(!campaign.getActiveContracts().isEmpty());
     }
 
     /**
@@ -174,7 +177,9 @@ public class SystemsPages {
 
         // Did the use of Espionage system change?
         // Either create and populate, or kill and clear, espionage tracking
-        if (model.useEspionageSystem != options.isUseEspionageSystem()) {
+        if (model.useEspionageSystem != options.isUseEspionageSystem()
+                  || (model.espionageTutorialEnabled != options.isEspionageTutorialEnabled())
+        ) {
             try {
                 if (model.useEspionageSystem) {
                     // We have activated the Espionage system; make sure everything gets populated!
@@ -182,7 +187,7 @@ public class SystemsPages {
                     EspionageManager.clearInstance();
                     EspionageManager espionageManager = EspionageManager.getInstance();
                     espionageManager.setCampaign(campaign);
-                    espionageManager.populateSpheresOfInfluence(campaign, false);
+                    espionageManager.populateSpheresOfInfluence(campaign, model.espionageTutorialEnabled);
                 } else {
                     EspionageManager.clearInstance();
                 }

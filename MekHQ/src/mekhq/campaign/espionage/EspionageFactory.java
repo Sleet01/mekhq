@@ -34,6 +34,7 @@
 package mekhq.campaign.espionage;
 
 import megamek.common.Player;
+import megamek.common.annotations.Nullable;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;
@@ -174,11 +175,37 @@ public class EspionageFactory {
         // Add Tutorial event items:
         // 1. "Mister Smith"'s card
         // 2. "Mister Smith" themselves TODO
-        soi.addIntelItem(generateMisterSmithCard(soiId, soi.advanceItemId(), playerId));
-//        soi.addIntelItem(generateMisterSmith());
+        IntelItem card = generateMisterSmithCard(soiId, soi.advanceItemId(), playerId);
+        soi.addIntelItem(card);
+// TODO: soi.addIntelItem(generateMisterSmith());
 
         // Add initial event, which will create the tutorial event chain
-        soi.addEventForActor(playerId, generateInitialTutorialEvent(campaign, mission, liaisonName, playerId));
+        IntelEvent initialEvent = generateInitialTutorialEvent(campaign, mission, liaisonName, playerId, soiId);
+        soi.addEventForActor(playerId, initialEvent);
+
+        // Create an outcome for if the user successfully adds a Person to the Espionage manager.
+        IntelOutcome goodOutcome = new IntelOutcome();
+        goodOutcome.setTitle("We'll Play Your Little Game...");
+        goodOutcome.setDescription(
+              "The Shop is open; you've assigned new personnel to the Tutorial Sphere of Influence."
+        );
+        ISerializableSupplier<Boolean> testFunc = anyoneAddedToSOITestFunction(playerId, soiId, 1);
+        String x = testFunc.getClass().toString();
+        goodOutcome.setTestFunction(testFunc);
+        goodOutcome.setApplyFunction(generateSecondTutorialEvent(soiId, playerId));
+
+        // Bad outcome: user didn't meet the requirements, they lose the card.
+        IntelOutcome badOutcome = new IntelOutcome();
+        badOutcome.setTitle("On Second Thought...");
+        badOutcome.setDescription(
+              "The Shop is closed!  You ignored the liaison's opening gambit and this chance has passed."
+        );
+        badOutcome.setTestFunction(eventExpired(soiId, playerId, initialEvent.getEventId()));
+        badOutcome.setApplyFunction(assignItemToActor(soiId, card.getItemId(), IntelItem.UNSET_ID, false, true));
+
+        // Add outcomes to the first event.
+        initialEvent.addOutcome(goodOutcome);
+        initialEvent.addOutcome(badOutcome);
 
         return soi;
     }
@@ -217,14 +244,15 @@ public class EspionageFactory {
     }
 
     private static IntelEvent generateInitialTutorialEvent(Campaign campaign, AbstractContract mission, String liaison,
-          int playerId) {
+          int playerId, int soiId) {
         // Start from a bare IntelEvent because we don't need prereqs
+        int eventId = 0;
         IntelEvent initialEvent = new IntelEvent();
         initialEvent.setTitle("An Introduction...");
         initialEvent.setDescription(
               String.format("The liaison, %s, waits patiently inside your office.", liaison)
         );
-        initialEvent.setEventId(0);
+        initialEvent.setEventId(eventId);
         LocalDate start = campaign.getLocalDate();
         LocalDate end = start.plusDays(7);
         initialEvent.setStartDate(start);
@@ -248,14 +276,35 @@ public class EspionageFactory {
         };
     }
 
-    private static ISerializableSupplier<Boolean>  anyoneAddedToSOITestFunction () {
+    /**
+     * Helper function to generate a test that compares runtime assigned persons to initial count.
+     * Additionally allows checking for a minimum threshold to exceed.
+     * @param playerId  owner of the persons to check
+     * @param soiId     SOI where they should be assigned
+     * @param threshold minimum number that must be met as well.
+     * @return lambda that evaluates to true if the requirements are met, else false.
+     */
+    private static ISerializableSupplier<Boolean> anyoneAddedToSOITestFunction (int playerId, int soiId,
+          int threshold) {
+        int priorCount = EspionageManager.getInstance().getCountForPlayerInSOI(playerId, soiId);
         return () -> {
             EspionageManager manager1 = EspionageManager.getInstance();
-            Campaign campaign = manager1.getCampaign(); // Should never be null...
-
-            // TODO: fix
-            return true;
+            return ((priorCount < manager1.getCountForPlayerInSOI(playerId, soiId)) &&
+                          (manager1.getCountForPlayerInSOI(playerId, soiId) >= threshold));
         };
+    }
+
+    private static ISerializableSupplier<Boolean> eventExpired(int soiId, int playerId, int eventId) {
+       return () -> {
+           EspionageManager manager1 = EspionageManager.getInstance();
+           SphereOfInfluence soi = manager1.getSphereOfInfluence(soiId);
+           IntelEvent event = (soi != null) ?
+                                    soi.getEventsListForActor(playerId)
+                                          .stream().filter(e -> e.getEventId() == eventId)
+                                          .findAny().orElse(null)
+                                    : null;
+           return (event != null && event.getState() == IntelEvent.EventState.EXPIRED);
+       };
     }
 
     private static String generateMisterSmithName(Campaign campaign, AbstractContract mission, Faction faction) {
@@ -282,6 +331,16 @@ public class EspionageFactory {
         card.setOwnerId(IntelItem.UNSET_ID);
         card.setPossessorId(playerId);
 
+        card.setItemName("Mysterious Calling Card");
+
+        card.setItemDescription(
+            new StringBuilder()
+                .append("A thin piece of gray metal the size and shape of a business card, if slightly thicker.")
+                .append("\nOne side has four lines of apparently random numbers and letters ")
+                .append("\nwritten on it in neat black block letters.")
+                .toString()
+        );
+
         // The outcomes are either:
         // A) Player decodes and becomes the owner of the card by SOI end -> gain some seed money.
         // B) player does not decode the card -> card is lost.
@@ -305,7 +364,7 @@ public class EspionageFactory {
                    .append("With the tutorial SOI at an end, you still have the mysterious card.")
                    .append("\nWhile fiddling idly with it, you discover, cleverly concealed beneath")
                    .append("\na thin layer of acrylic paint, a set of data contacts.  With a suitable")
-                   .append("\nadapter in hand you connect it to your workstation, and soon uncover")
+                   .append("\nadapter in hand you connect it to your workstation and soon uncover")
                    .append("\na single file containing strings of digits that you immediately recognize")
                    .append("\nas an account number at one of the local banks.  It appears that your benefactor")
                    .append("\nhas left your nascent intelligence organization a little seed money!")
@@ -322,6 +381,12 @@ public class EspionageFactory {
     private static String generateIntelOrg(Campaign campaign, AbstractContract mission, Faction faction) {
         // TODO: add per-faction, per-region intel orgs in YAML file
         return "Spies";
+    }
+
+    private static ISerializableRunnable generateSecondTutorialEvent(int soiId, int playerId) {
+        return (ISerializableRunnable) () -> {
+
+        };
     }
 
     private static ISerializableRunnable givePlayerMoney(int soiId, int playerId, double amount, String description) {
@@ -368,7 +433,24 @@ public class EspionageFactory {
         };
     }
 
-    private static IntelItem retrieveItem(int soiId, int itemId) {
+    private static ISerializableRunnable assignItemToActor(int soiId, int itemId, int actorId, boolean owner,
+          boolean possessor) {
+
+        return (ISerializableRunnable) () -> {
+            IntelItem item = retrieveItem(soiId, itemId);
+
+            if (item != null) {
+                if (owner) {
+                    item.setOwnerId(actorId);
+                }
+                if (possessor) {
+                    item.setPossessorId(actorId);
+                }
+            }
+        };
+    }
+
+    private static @Nullable IntelItem retrieveItem(int soiId, int itemId) {
         EspionageManager manager = EspionageManager.getInstance();
         SphereOfInfluence soi = (manager != null) ? manager.getSphereOfInfluence(soiId) : null;
         IntelItem item = (soi != null) ? soi.getIntelItem(itemId) : null;

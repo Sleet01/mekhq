@@ -99,6 +99,7 @@ import mekhq.campaign.campaignOptions.CampaignOptions;
 import mekhq.campaign.campaignOptions.CampaignOptionsUnmarshaller;
 import mekhq.campaign.enums.CampaignTransportType;
 import mekhq.campaign.espionage.EspionageManager;
+import mekhq.campaign.espionage.EspionageRoster;
 import mekhq.campaign.espionage.SphereOfInfluence;
 import mekhq.campaign.finances.Finances;
 import mekhq.campaign.force.CombatTeam;
@@ -1618,6 +1619,11 @@ public record CampaignXmlParser(InputStream is, MekHQ app) {
         if (options != null && options.isUseEspionageSystem()) {
             EspionageManager espionage = EspionageManager.getInstance(retVal);
 
+            if (espionage == null) {
+                LOGGER.error("Failed to get EspionageManager instance!!");
+                return;
+            }
+
             NodeList wList = wn.getChildNodes();
 
             // Okay, lets iterate through the children, eh?
@@ -1627,17 +1633,23 @@ public record CampaignXmlParser(InputStream is, MekHQ app) {
                 // If it's not an element node, we ignore it.
                 if (wn2.getNodeType() != Node.ELEMENT_NODE) {
                     continue;
-                } else if (!wn2.getNodeName().equalsIgnoreCase("sphereOfInfluence")) {
+                } else if (wn2.getNodeName().equalsIgnoreCase("sphereOfInfluence")) {
+                    SphereOfInfluence soi = SphereOfInfluence.generateInstanceFromXML(wn2, retVal, version);
+                    if (soi != null) {
+                        espionage.addSphereOfInfluence(soi);
+                    }
+                } else if (wn2.getNodeName().equalsIgnoreCase("espionageRoster")) {
+                    EspionageRoster roster = EspionageRoster.generateInstanceFromXML(wn2, retVal, version);
+                    if (roster != null) {
+                        espionage.setAssignmentsForPlayer(roster.getPlayerId(), roster);
+                    }
+                } else {
                     // Error condition of sorts!
                     // Errr, what should we do here?
                     LOGGER.error("Unknown node type not loaded in Espionage nodes: {}", wn2.getNodeName());
                     continue;
                 }
 
-                SphereOfInfluence soi = SphereOfInfluence.generateInstanceFromXML(wn2, retVal, version);
-                if (soi != null) {
-                    espionage.addSphereOfInfluence(soi);
-                }
             }
         }
 
