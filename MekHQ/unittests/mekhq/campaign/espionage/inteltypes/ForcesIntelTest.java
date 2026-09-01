@@ -1,9 +1,11 @@
 package mekhq.campaign.espionage.inteltypes;
 
 import megamek.Version;
+import megamek.common.net.marshalling.SanityInputFilter;
 import megamek.common.units.Entity;
 import mekhq.campaign.Campaign;
 import mekhq.utilities.MHQXMLUtility;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -15,6 +17,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputFilter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.AbstractMap.SimpleEntry;
@@ -28,6 +31,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static testUtilities.MHQTestUtilities.getEntityForUnitTesting;
 
 class ForcesIntelTest {
+
+    @BeforeAll
+    static void setup() {
+        if (ObjectInputFilter.Config.getSerialFilter() == null) {
+            ObjectInputFilter.Config.setSerialFilter(new SanityInputFilter());
+        }
+    }
 
     @BeforeEach
     void setUp() {

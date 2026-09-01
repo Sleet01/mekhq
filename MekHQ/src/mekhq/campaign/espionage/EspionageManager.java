@@ -92,23 +92,43 @@ public class EspionageManager {
         if (instance != null) {
             instance.campaign = null;
             instance.espionageFactory = null;
+            instance.assignments = null;
             instance = null;
         }
     }
 
     // TODO: update to track Persons assigned _per player_
     public ArrayList<EspionageRoster> getAssignments() {
+        if (this.assignments == null) {
+            this.assignments = new ArrayList<EspionageRoster>();
+        }
         return this.assignments;
     }
 
     @Nullable
     public EspionageRoster getAssignmentsForPlayer(int playerId) {
-        for (EspionageRoster roster: this.assignments) {
+        for (EspionageRoster roster: getAssignments()) {
             if (roster.getPlayerId() ==  playerId) {
                 return roster;
             }
         }
         return null;
+    }
+
+    public int getAssignmentCountForPlayer(int playerId) {
+        EspionageRoster roster = getAssignmentsForPlayer(playerId);
+        if (roster != null) {
+            return roster.getPersonCount();
+        }
+        return 0;
+    }
+
+    public int getCountForPlayerInSOI(int playerId, int soiId) {
+        EspionageRoster roster = getAssignmentsForPlayer(playerId);
+        if (roster != null) {
+            return roster.getPersonCount(soiId);
+        }
+        return 0;
     }
 
     public void setAssignments(ArrayList<EspionageRoster> rosters) {
@@ -129,9 +149,11 @@ public class EspionageManager {
 
     public void addPersonForPlayer(Person person, int playerId) {
         EspionageRoster roster = getAssignmentsForPlayer(playerId);
-        if (roster != null) {
-            roster.assignPerson(person);
+        if (roster == null) {
+            roster = new EspionageRoster(playerId);
+            this.assignments.add(roster);
         }
+        roster.assignPerson(person);
     }
 
     public void removePersonForPlayer(Person person, int playerId) {

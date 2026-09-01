@@ -2,6 +2,7 @@ package mekhq.campaign.espionage;
 
 import megamek.Version;
 import megamek.common.Player;
+import megamek.common.net.marshalling.SanityInputFilter;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.espionage.IntelEvent.EventState;
 import mekhq.utilities.MHQXMLUtility;
@@ -17,6 +18,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputFilter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDate;
@@ -35,6 +37,9 @@ class IntelEventTest {
     @BeforeAll
     static void setup() {
         campaign = Mockito.mock(Campaign.class);
+        if (ObjectInputFilter.Config.getSerialFilter() == null) {
+            ObjectInputFilter.Config.setSerialFilter(new SanityInputFilter());
+        }
     }
 
     @BeforeEach

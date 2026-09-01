@@ -204,6 +204,20 @@ public class EspionageRoster {
         return persons;
     }
 
+    public int getPersonCount() {
+        return memberAssignments.size();
+    }
+
+    public int getPersonCount(int soiId) {
+        int count = 0;
+        for (Assignment assignment: memberAssignments.values()) {
+            if (assignment.soiId == soiId) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public static EspionageRoster generateInstanceFromXML(Node node, Campaign campaign, Version version) {
         EspionageRoster retVal = null;
         NamedNodeMap attrs = node.getAttributes();

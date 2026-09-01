@@ -38,6 +38,7 @@ import megamek.common.Player;
 import megamek.common.enums.SkillLevel;
 import megamek.common.equipment.EquipmentType;
 import megamek.common.game.Game;
+import megamek.common.net.marshalling.SanityInputFilter;
 import megamek.common.units.Entity;
 import megamek.common.units.Mek;
 import megamek.common.units.Tank;
@@ -62,6 +63,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputFilter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -81,6 +83,9 @@ class IntelOutcomeTest {
     @BeforeAll
     public static void setUpBeforeClass() throws DOMException {
         EquipmentType.initializeTypes();
+        if (ObjectInputFilter.Config.getSerialFilter() == null) {
+            ObjectInputFilter.Config.setSerialFilter(new SanityInputFilter());
+        }
     }
 
     @BeforeEach

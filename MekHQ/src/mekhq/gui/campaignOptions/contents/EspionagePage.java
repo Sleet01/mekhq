@@ -66,6 +66,8 @@ class EspionagePage {
     private static final int FORM_CONTROL_COLUMN_WIDTH = SettingsFormPanel.DEFAULT_CONTROL_WIDTH;
     private static final int CHECKBOX_GRID_COLUMNS = 2;
 
+    private boolean hasActiveMission = false;
+
     private JCheckBox chkEnableEspionageSystem;
     private JCheckBox chkEnableTutorial;
     private JCheckBox chkTutorialCompleted;
@@ -119,6 +121,7 @@ class EspionagePage {
         chkEnableEspionageSystem.addMouseListener(createTipPanelUpdater("EnableEspionageSystem"));
 
         chkEnableTutorial = new CampaignOptionsCheckBox("EnableEspionageTutorial");
+        chkEnableTutorial.setEnabled(this.hasActiveMission);
         chkEnableTutorial.addMouseListener(createTipPanelUpdater("EnableEspionageTutorial"));
 
         chkTutorialCompleted = new CampaignOptionsCheckBox("TutorialEspionageCompleted");
@@ -149,7 +152,6 @@ class EspionagePage {
             return;
         }
 
-        // chkEnableEspionageSystem.setSelected(options.isUseEspionageSystem());
         chkEnableEspionageSystem.setSelected(model.useEspionageSystem);
         chkEnableTutorial.setSelected(model.espionageTutorialEnabled);
         chkTutorialCompleted.setSelected(model.espionageTutorialCompleted);
@@ -169,5 +171,9 @@ class EspionagePage {
         model.useEspionageSystem = chkEnableEspionageSystem.isSelected();
         model.espionageTutorialEnabled = chkEnableTutorial.isSelected();
         model.espionageTutorialCompleted = chkTutorialCompleted.isSelected();
+    }
+
+    void setHasActiveMission(boolean hasActive) {
+        this.hasActiveMission = hasActive;
     }
 }
