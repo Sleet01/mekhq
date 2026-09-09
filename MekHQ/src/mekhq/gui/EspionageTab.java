@@ -92,6 +92,9 @@ public final class EspionageTab extends CampaignGuiTab {
 
     public static final int PERSONNEL_VIEW_MIN_WIDTH = 450;
     public static final int PERSONNEL_VIEW_PREFERRED_WIDTH = 650;
+    private static final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignGUI",
+          MekHQ.getMHQOptions().getLocale());
+
 
     // New members
     private JPanel jpSOIHeader;
@@ -137,8 +140,10 @@ public final class EspionageTab extends CampaignGuiTab {
      */
     @Override
     public void initTab() {
-        final ResourceBundle resourceMap = ResourceBundle.getBundle("mekhq.resources.CampaignGUI",
-              MekHQ.getMHQOptions().getLocale());
+        // We want the EspionageManager ref for some of our construction
+        // If it's null, fine.
+        Campaign campaign = getCampaign();
+        EspionageManager manager = (campaign == null) ? null : campaign.getEspionageManager();
 
         setLayout(new GridBagLayout());
 
@@ -152,11 +157,7 @@ public final class EspionageTab extends CampaignGuiTab {
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.anchor = GridBagConstraints.NORTH;
         gridBagConstraints.insets = new Insets(5, 5, 5, 5);
-        jpSOIHeader = new JPanel(new GridBagLayout());
-        // TODO: fill with content and make better
-        jpSOIHeader.add(new JLabel(resourceMap.getString("espionageTab.personnelHeader")));
-        jpSOIHeader.setPreferredSize(new Dimension(700, 20));
-        jpSOIHeader.setBorder(RoundedLineBorder.createRoundedLineBorder());
+        jpSOIHeader = createSOIHeaderSelector(manager);
         add(jpSOIHeader, gridBagConstraints);
 
         // Personnel selection table and scrolling pane
@@ -213,6 +214,19 @@ public final class EspionageTab extends CampaignGuiTab {
 
         refreshAll();
         updateUIScaling();
+    }
+
+    /**
+     * The header will act as a navigation component to switch between SOIs
+     * @return
+     */
+    protected JPanel createSOIHeaderSelector(EspionageManager manager) {
+        //TODO: make a navigation header that can activate/inactivate itself on refresh
+        JPanel header = new JPanel(new GridBagLayout());
+        header.add(new JLabel(resourceMap.getString("espionageTab.personnelHeader")));
+        header.setPreferredSize(new Dimension(700, 20));
+        header.setBorder(RoundedLineBorder.createRoundedLineBorder());
+        return header;
     }
 
     private void updateUIScaling() {
@@ -414,5 +428,4 @@ public final class EspionageTab extends CampaignGuiTab {
         getPersonnelTable().setRowHeight(UIUtil.scaleForGUI(15));
         filterPersonnel();
     }
-
 }
