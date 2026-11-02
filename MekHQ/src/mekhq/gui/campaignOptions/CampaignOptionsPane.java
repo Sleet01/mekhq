@@ -582,7 +582,7 @@ public class CampaignOptionsPane extends JPanel {
      *
      * @param mode the state in which the dialog was triggered.
      *
-     * @return a {@link JScrollPane} containing the general page panel
+     * @return a {@link JPanel} containing the general page panel
      */
     private JPanel createGeneralPage(CampaignOptionsDialogMode mode) {
         generalPage = new GeneralPage(campaign, frame, mode);
