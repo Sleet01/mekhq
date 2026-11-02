@@ -34,7 +34,7 @@
 package mekhq.campaign.espionage.inteltypes;
 
 import megamek.Version;
-import megamek.common.annotations.Nullable;
+import jakarta.annotation.Nullable;
 import mekhq.campaign.Campaign;
 import mekhq.utilities.MHQXMLUtility;
 import org.w3c.dom.Node;

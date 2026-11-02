@@ -34,7 +34,7 @@
 package mekhq.campaign.espionage;
 
 import megamek.common.Player;
-import megamek.common.annotations.Nullable;
+import jakarta.annotation.Nullable;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.finances.Money;

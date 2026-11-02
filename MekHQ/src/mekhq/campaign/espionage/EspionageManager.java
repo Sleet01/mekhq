@@ -33,7 +33,7 @@
 
 package mekhq.campaign.espionage;
 
-import megamek.common.annotations.Nullable;
+import jakarta.annotation.Nullable;
 import mekhq.MekHQ;
 import mekhq.campaign.Campaign;
 import mekhq.campaign.mission.scenarios.Scenario;
@@ -66,7 +66,7 @@ public class EspionageManager {
         this.assignments = assignedUUIDs;
     }
 
-    public static @Nullable EspionageManager getInstance() {
+    public static EspionageManager getInstance() {
         if (instance == null) {
             instance = new EspionageManager(null, EspionageFactory.getInstance(), new ArrayList<>(),
                   new ArrayList<>());
